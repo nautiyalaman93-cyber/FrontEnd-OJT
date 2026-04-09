@@ -67,7 +67,7 @@ export default function Home() {
 
       {/* ═══ Hero Section ═══ */}
       <section
-        className="w-full text-center pt-20 pb-44 relative overflow-hidden"
+        className="w-full text-center pt-20 pb-44 relative overflow-hidden bp-particles"
         style={{
           background: 'linear-gradient(135deg, #020617 0%, #0B3D6B 45%, #1E3A8A 100%)',
         }}
@@ -81,6 +81,13 @@ export default function Home() {
           className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[150%] rounded-full blur-[100px] pointer-events-none"
           style={{ background: 'rgba(59,130,246,0.08)' }}
         />
+
+        {/* Floating particles */}
+        <div className="bp-particle bp-particle--1" />
+        <div className="bp-particle bp-particle--2" />
+        <div className="bp-particle bp-particle--3" />
+        <div className="bp-particle bp-particle--4" />
+        <div className="bp-particle bp-particle--5" />
 
         <div className="relative z-10 max-w-3xl mx-auto px-4 mt-4">
           <div className="anim-fade-up">
@@ -99,8 +106,15 @@ export default function Home() {
           </div>
 
           <h1
-            className="text-5xl md:text-6xl font-extrabold text-white mb-5 tracking-tight leading-tight anim-fade-up anim-delay-1"
-            style={{ fontFamily: "'Poppins', sans-serif" }}
+            className="text-5xl md:text-6xl font-extrabold mb-5 tracking-tight leading-tight anim-fade-up anim-delay-1 bp-gradient-text"
+            style={{
+              fontFamily: "'Poppins', sans-serif",
+              background: 'linear-gradient(135deg, #FFFFFF 0%, #FF8C42 40%, #58A6FF 70%, #FFFFFF 100%)',
+              backgroundSize: '300% 300%',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
           >
             BHARAT-PATH
           </h1>
@@ -113,7 +127,7 @@ export default function Home() {
       {/* ═══ Search Bar overlay ═══ */}
       <section className="w-full max-w-[1050px] mx-auto px-4 -mt-24 relative z-20 anim-fade-up anim-delay-3">
         <div
-          className="rounded-2xl"
+          className="rounded-2xl anim-glow-pulse"
           style={{
             background: 'var(--bg-surface)',
             boxShadow: 'var(--shadow-lg)',
@@ -252,10 +266,11 @@ export default function Home() {
 
                   {/* Icon */}
                   <div
-                    className="bp-icon-box w-12 h-12 mb-5 relative z-10"
+                    className="bp-icon-box w-12 h-12 mb-5 relative z-10 anim-breathe"
                     style={{
                       background: feature.iconBg,
                       border: '1px solid var(--border-light)',
+                      animationDelay: `${idx * 0.5}s`,
                     }}
                   >
                     <Icon size={22} color={feature.iconColor} />

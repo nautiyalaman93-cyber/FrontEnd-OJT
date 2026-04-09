@@ -1,0 +1,70 @@
+{
+  "trainNumber": "12952",
+  "trainName": "Mumbai Rajdhani",
+  "currentStation": "RTM",
+  "currentStationName": "Ratlam Junction",
+  "delay": 15,
+  "delayStatus": "Running 15 mins late",
+  "lastUpdated": "2024-04-06T14:30:00Z",
+  "route": [
+    {
+      "stationCode": "NDLS",
+      "stationName": "New Delhi",
+      "scheduledArrival": "16:55",
+      "scheduledDeparture": "17:00",
+      "actualDeparture": "17:00",
+      "status": "departed",
+      "dayCount": 1
+    },
+    {
+      "stationCode": "MTJ",
+      "stationName": "Mathura Junction",
+      "scheduledArrival": "18:42",
+      "scheduledDeparture": "18:44",
+      "actualArrival": "18:55",
+      "actualDeparture": "18:57",
+      "status": "departed",
+      "dayCount": 1
+    },
+    {
+      "stationCode": "KOTA",
+      "stationName": "Kota Junction",
+      "scheduledArrival": "21:45",
+      "scheduledDeparture": "21:50",
+      "status": "departed",
+      "dayCount": 1
+    },
+    {
+      "stationCode": "RTM",
+      "stationName": "Ratlam Junction",
+      "scheduledArrival": "01:15",
+      "scheduledDeparture": "01:20",
+      "status": "current",
+      "dayCount": 2
+    },
+    {
+      "stationCode": "BRC",
+      "stationName": "Vadodara Junction",
+      "scheduledArrival": "04:05",
+      "scheduledDeparture": "04:10",
+      "status": "upcoming",
+      "dayCount": 2
+    },
+    {
+      "stationCode": "ST",
+      "stationName": "Surat",
+      "scheduledArrival": "05:23",
+      "scheduledDeparture": "05:25",
+      "status": "upcoming",
+      "dayCount": 2
+    },
+    {
+      "stationCode": "MMCT",
+      "stationName": "Mumbai Central",
+      "scheduledArrival": "08:35",
+      "scheduledDeparture": null,
+      "status": "upcoming",
+      "dayCount": 2
+    }
+  ]
+}

@@ -10,17 +10,7 @@ import {
   Clock, Info, Search, Train, CheckCircle2, XCircle,
 } from 'lucide-react';
 
-/* Mock data — only shown after entering a train number */
-const mockRequestsByTrain = {
-  '12952': [
-    { id: 1, name: 'Aman Nautiyal', from: 'B4 | Seat 45 (Lower)', to: 'Upper', time: '10m ago', coach: 'B4' },
-    { id: 2, name: 'Neha Sharma', from: 'A1 | Seat 12 (Upper)', to: 'Lower', time: '25m ago', coach: 'A1' },
-    { id: 3, name: 'Rohit Verma', from: 'B2 | Seat 31 (Middle)', to: 'Side Lower', time: '1h ago', coach: 'B2' },
-  ],
-  '12004': [
-    { id: 4, name: 'Priya Kapoor', from: 'C1 | Seat 8 (Upper)', to: 'Lower', time: '5m ago', coach: 'C1' },
-  ],
-};
+import { seatService } from '../../services/seatService';
 
 export default function SeatExchange() {
   const [trainNumber, setTrainNumber] = useState('');
@@ -34,26 +24,58 @@ export default function SeatExchange() {
   const [myTarget, setMyTarget] = useState('Upper Berth');
   const [postSuccess, setPostSuccess] = useState(false);
 
+  const [allRequests, setAllRequests] = useState([]);
+  const [fetchLoading, setFetchLoading] = useState(false);
+
+  // Filter requests by train number when searched
   const requests = hasSearched
-    ? (mockRequestsByTrain[trainNumber] || [])
+    ? allRequests.filter(req => req.trainNumber === trainNumber)
     : [];
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!trainNumber.trim()) return;
     setIsSearching(true);
     setHasSearched(false);
     setPostSuccess(false);
-    setTimeout(() => {
+    
+    setFetchLoading(true);
+    try {
+      const data = await seatService.getRequests();
+      setAllRequests(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setFetchLoading(false);
       setIsSearching(false);
       setHasSearched(true);
-    }, 600);
+    }
   };
 
-  const handlePost = (e) => {
+  const handlePost = async (e) => {
     e.preventDefault();
     if (!myPnr || !mySeat) return;
-    setPostSuccess(true);
-    setTimeout(() => setPostSuccess(false), 3000);
+    
+    try {
+      const coachValue = mySeat.split('|')[0]?.trim() || 'Unknown';
+      await seatService.submitRequest({
+        trainNumber,
+        journeyDate: new Date().toISOString().split('T')[0], // Today's date by default
+        coach: coachValue,
+        currentSeat: mySeat,
+        wantedSeat: myTarget
+      });
+      
+      setPostSuccess(true);
+      setMyPnr('');
+      setMySeat('');
+      
+      // Refresh list
+      handleSearch();
+      
+      setTimeout(() => setPostSuccess(false), 3000);
+    } catch (err) {
+      console.error('Failed to post swap request', err);
+    }
   };
 
   return (
@@ -193,7 +215,7 @@ export default function SeatExchange() {
                     requests.length > 0 ? (
                       requests.map((req, idx) => (
                         <div
-                          key={req.id}
+                          key={req._id}
                           className={`p-5 flex flex-col sm:flex-row items-center justify-between gap-5 border-b last:border-0 transition-all duration-200 anim-fade-up anim-delay-${Math.min(idx + 3, 6)}`}
                           style={{ borderColor: 'var(--border-light)' }}
                           onMouseEnter={(e) => {
@@ -206,7 +228,6 @@ export default function SeatExchange() {
                           }}
                         >
                           <div className="flex items-start gap-4 w-full">
-                            {/* Avatar with initial */}
                             <div
                               className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-[15px] font-bold"
                               style={{
@@ -215,17 +236,17 @@ export default function SeatExchange() {
                                 color: 'var(--secondary)',
                               }}
                             >
-                              {req.name.charAt(0)}
+                              {req.user?.name ? req.user.name.charAt(0) : 'U'}
                             </div>
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-3 mb-1 flex-wrap">
-                                <p className="font-bold text-[15px]" style={{ color: 'var(--text-heading)' }}>{req.name}</p>
+                                <p className="font-bold text-[15px]" style={{ color: 'var(--text-heading)' }}>{req.user?.name || 'Unknown User'}</p>
                                 <span
                                   className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                                   style={{ color: 'var(--text-muted)', background: 'var(--bg-surface-2)' }}
                                 >
-                                  <Clock size={9} /> {req.time}
+                                  <Clock size={9} /> {new Date(req.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                                 <span
                                   className="text-[10px] font-bold px-2 py-0.5 rounded"
@@ -235,14 +256,13 @@ export default function SeatExchange() {
                                 </span>
                               </div>
 
-                              {/* Swap visualization */}
                               <div
                                 className="flex items-center gap-3 mt-2 p-2.5 rounded-lg w-fit"
                                 style={{ background: 'var(--bg-surface-2)', border: '1px solid var(--border-light)' }}
                               >
                                 <div className="text-center px-2">
                                   <p className="text-[10px] uppercase font-bold mb-0.5" style={{ color: 'var(--text-muted)' }}>Has</p>
-                                  <p className="text-[12px] font-bold" style={{ color: 'var(--text-primary)' }}>{req.from}</p>
+                                  <p className="text-[12px] font-bold" style={{ color: 'var(--text-primary)' }}>{req.currentSeat}</p>
                                 </div>
                                 <div
                                   className="w-7 h-7 rounded-full flex items-center justify-center"
@@ -252,7 +272,7 @@ export default function SeatExchange() {
                                 </div>
                                 <div className="text-center px-2">
                                   <p className="text-[10px] uppercase font-bold mb-0.5" style={{ color: 'var(--text-muted)' }}>Needs</p>
-                                  <p className="text-[12px] font-bold" style={{ color: 'var(--primary)' }}>{req.to}</p>
+                                  <p className="text-[12px] font-bold" style={{ color: 'var(--primary)' }}>{req.wantedSeat}</p>
                                 </div>
                               </div>
                             </div>

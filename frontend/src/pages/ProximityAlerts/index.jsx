@@ -52,7 +52,7 @@ export default function ProximityAlerts() {
 
       {/* ═══ Configuration Card ═══ */}
       <section className="max-w-[620px] mx-auto px-4">
-        <div className="bp-card overflow-hidden anim-fade-up">
+        <div className="bp-card anim-fade-up" style={{ overflow: 'visible' }}>
 
           {/* Card header with toggle */}
           <div
@@ -107,7 +107,7 @@ export default function ProximityAlerts() {
             </div>
 
             {/* Target station dropdown */}
-            <div className="anim-fade-up anim-delay-2">
+            <div className="relative anim-fade-up anim-delay-2" style={{ zIndex: 50 }}>
               <label
                 className="block text-[12px] font-semibold uppercase tracking-wide mb-1.5"
                 style={{ color: 'var(--text-secondary)', letterSpacing: '0.05em' }}
@@ -184,9 +184,31 @@ export default function ProximityAlerts() {
             <p className="text-[14px] mb-1" style={{ color: 'var(--text-secondary)' }}>
               You'll be alerted when your train is within <strong style={{ color: 'var(--primary)' }}>{distance} km</strong> of
             </p>
-            <p className="text-[15px] font-bold" style={{ color: 'var(--text-heading)' }}>
+            <p className="text-[15px] font-bold mb-6" style={{ color: 'var(--text-heading)' }}>
               {targetStation}
             </p>
+            <button
+              onClick={() => {
+                setAlertSet(false);
+                setIsActive(false);
+                setHasSearched(false);
+              }}
+              className="bp-btn py-2.5 px-6 text-[13px] font-bold uppercase tracking-wide transition-all"
+              style={{
+                background: 'transparent',
+                border: '1.5px solid var(--danger)',
+                color: 'var(--danger)',
+                borderRadius: '8px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--danger-bg)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              Cancel Alarm
+            </button>
           </div>
         )}
       </section>

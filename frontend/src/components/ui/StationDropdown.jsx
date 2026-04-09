@@ -111,7 +111,11 @@ export default function StationDropdown({ label, value, onChange, placeholder = 
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'transparent';
                   }}
-                  onClick={(e) => { e.stopPropagation(); handleSelect(st); }}
+                  onMouseDown={(e) => { 
+                    e.preventDefault();
+                    e.stopPropagation(); 
+                    handleSelect(st); 
+                  }}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <MapPin size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />

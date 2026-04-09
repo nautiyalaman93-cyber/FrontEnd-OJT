@@ -89,6 +89,8 @@ export default function SOS() {
                   style={{
                     background: c.bg,
                     border: `1px solid ${c.color}22`,
+                    animation: 'pulse-ring 2s ease-in-out infinite',
+                    animationDelay: `${idx * 0.3}s`,
                   }}
                 >
                   <Icon size={24} color={c.color} />
@@ -213,9 +215,11 @@ export default function SOS() {
 
                 {/* Submit */}
                 <button
-                  className="bp-btn bp-btn--danger w-full py-3.5 text-[15px] font-bold flex items-center justify-center gap-2"
+                  className="bp-btn bp-btn--danger w-full py-3.5 text-[15px] font-bold flex items-center justify-center gap-2 bp-ripple"
                   onClick={handleSubmit}
                   disabled={loading}
+                  onMouseEnter={(e) => e.currentTarget.style.animation = 'shake 0.5s ease-in-out'}
+                  onAnimationEnd={(e) => e.currentTarget.style.animation = 'none'}
                 >
                   <AlertTriangle size={18} />
                   {loading ? 'Alerting Authorities…' : 'Submit Emergency Alert'}

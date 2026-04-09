@@ -1,0 +1,44 @@
+{
+  "pnr": "1234567890",
+  "trainNumber": "12952",
+  "trainName": "Mumbai Rajdhani",
+  "from": "NDLS",
+  "to": "MMCT",
+  "dateOfJourney": "2024-12-25",
+  "chartPrepared": true,
+  "passengers": [
+    {
+      "serialNo": 1,
+      "name": "Rahul Sharma",
+      "bookingStatus": "CNF/S4/32/Lower",
+      "currentStatus": "CNF/S4/32/Lower",
+      "coach": "S4",
+      "seatNumber": "32",
+      "berth": "Lower"
+    },
+    {
+      "serialNo": 2,
+      "name": "Priya Sharma",
+      "bookingStatus": "CNF/S4/33/Upper",
+      "currentStatus": "CNF/S4/33/Upper",
+      "coach": "S4",
+      "seatNumber": "33",
+      "berth": "Upper"
+    },
+    {
+      "serialNo": 3,
+      "name": "Aarav Sharma",
+      "bookingStatus": "WL/14",
+      "currentStatus": "WL/12",
+      "coach": null,
+      "seatNumber": null,
+      "berth": null
+    }
+  ],
+  "class": "Sleeper (SL)",
+  "quota": "General",
+  "distance": "1384 km",
+  "duration": "15h 55m",
+  "departureTime": "16:55",
+  "arrivalTime": "08:50"
+}

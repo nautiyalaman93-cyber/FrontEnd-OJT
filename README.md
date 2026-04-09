@@ -1,16 +1,39 @@
-# React + Vite
+# BharatPath 🚂
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack Indian Railway companion app for live tracking, PNR status, seat exchange, and SOS emergency alerts.
 
-Currently, two official plugins are available:
+## Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```
+BharatPath/
+├── frontend/   ← React + Vite (UI)
+└── backend/    ← Node.js + Express + MongoDB (API)
+```
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Running the Project
 
-## Expanding the ESLint configuration
+### 1. Start the Backend
+```bash
+cd backend
+npm install      # only first time
+npm run dev      # runs on http://localhost:5000
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 2. Start the Frontend
+```bash
+cd frontend
+npm install      # only first time
+npm run dev      # runs on http://localhost:5173
+```
+
+---
+
+## Tech Stack
+- **Frontend**: React 19, Vite, Tailwind CSS, React Router v7
+- **Backend**: Node.js, Express, MongoDB (Mongoose), JWT, Google OAuth
+- **External API**: RapidAPI (IRCTC data)
+
+## Environment Setup
+Copy `backend/.env.example` to `backend/.env` and fill in your values.

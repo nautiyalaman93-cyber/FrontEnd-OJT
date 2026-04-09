@@ -68,7 +68,7 @@ export default function Topbar() {
                     paddingBottom: '18px',
                     fontWeight: isActive ? '700' : '500',
                   }}
-                  className="text-[13.5px] uppercase tracking-wide transition-all duration-200 hover:opacity-75"
+                  className={`text-[13.5px] uppercase tracking-wide transition-all duration-200 hover:opacity-75 ${!isActive ? 'bp-link-underline' : ''}`}
                 >
                   {link.label}
                 </Link>
