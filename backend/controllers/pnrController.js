@@ -10,7 +10,7 @@
  *    - If YES key → We call the real RapidAPI and return live data.
  */
 
-const railwayAPI = require('../services/apiService');
+const { createRailwayAPI } = require('../services/apiService');
 const pnrMock = require('../mock/pnrMock.json');
 
 // -----------------------------------------------------------------------
@@ -26,14 +26,18 @@ const getPNRStatus = async (req, res) => {
     return res.status(400).json({ message: 'Please provide a valid 10-digit PNR number.' });
   }
 
-  // If no API key, use mock data
-  if (!process.env.RAPIDAPI_KEY) {
-    console.log('⚠️  No RAPIDAPI_KEY found. Using mock PNR data.');
+  const apiKey = process.env.PNR_API_KEY;
+  const apiHost = process.env.PNR_API_HOST;
+
+  // If no API key or host, use mock data
+  if (!apiKey || !apiHost) {
+    console.log('⚠️  No PNR_API_KEY or PNR_API_HOST found. Using mock PNR data.');
     return res.json({ success: true, data: pnrMock, isMock: true });
   }
 
   // If API key exists, call RapidAPI
   try {
+    const railwayAPI = createRailwayAPI(apiHost, apiKey);
     const response = await railwayAPI.get(`/api/v3/getPNRStatus?pnrNumber=${pnr}`);
     return res.json({ success: true, data: response.data.data });
   } catch (error) {

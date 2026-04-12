@@ -1,21 +1,11 @@
 /**
  * @file alertService.js
- * @description Handles proximity and other alerts.
- * 
- * WHY THIS FILE EXISTS:
- * Manages user subscriptions to alerts.
- * 
- * WHAT WILL BREAK IF REMOVED:
- * Proximity Alert page logic will fail.
  */
-
-// ⚠️ Replace with real API call using .env when backend is ready
-import { proximityAlerts } from '../mock/mockData';
 
 export const alertService = {
   getAlerts: async () => {
     return new Promise((resolve) => {
-      setTimeout(() => resolve(proximityAlerts), 400);
+      setTimeout(() => resolve([]), 400);
     });
   },
   createAlert: async (trainNumber, distanceKm) => {
@@ -28,7 +18,6 @@ export const alertService = {
           distanceKm,
           isActive: true
         };
-        proximityAlerts.push(newAlert);
         resolve(newAlert);
       }, 500);
     });

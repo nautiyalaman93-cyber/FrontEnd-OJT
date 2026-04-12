@@ -9,16 +9,21 @@
  */
 
 const express = require('express');
-const { createRequest, getAllRequests, deleteRequest } = require('../controllers/seatController');
+const { createRequest, getAllRequests, getMyRequests, deleteRequest, sendMessage, getMessages } = require('../controllers/seatController');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Anyone can view the public swap board
+// Public routes
 router.get('/all', getAllRequests);
 
-// Temporarily bypassed protect for Guest Mode
-router.post('/request', createRequest);
-router.delete('/:id', deleteRequest);
+// Protected routes
+router.get('/my-requests', protect, getMyRequests);
+router.post('/request', protect, createRequest);
+router.delete('/:id', protect, deleteRequest);
+
+// Messaging routes
+router.post('/:id/message', protect, sendMessage);
+router.get('/:id/messages', protect, getMessages);
 
 module.exports = router;

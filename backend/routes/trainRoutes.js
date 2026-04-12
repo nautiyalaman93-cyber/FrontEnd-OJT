@@ -8,7 +8,7 @@
  */
 
 const express = require('express');
-const { getTrainStatus, searchTrains } = require('../controllers/trainController');
+const { getTrainStatus, searchTrains, searchStations } = require('../controllers/trainController');
 
 const router = express.Router();
 
@@ -17,5 +17,8 @@ router.get('/status', getTrainStatus);
 
 // Search trains between stations — no login needed
 router.get('/search', searchTrains);
+
+// Search stations
+router.get('/stations/search', searchStations);
 
 module.exports = router;

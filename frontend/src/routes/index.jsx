@@ -27,6 +27,7 @@ import ProximityAlerts from '../pages/ProximityAlerts';
 import SOS from '../pages/SOS';
 import SeatExchange from '../pages/SeatExchange';
 import ConnectingJourneys from '../pages/ConnectingJourneys';
+import AuthSuccess from '../pages/Home/AuthSuccess';
 
 // Import the newly created MainLayout
 import MainLayout from '../components/layout/MainLayout';
@@ -47,6 +48,7 @@ export default function AppRoutes() {
         <Route path="sos" element={<SOS />} />
         <Route path="seat-exchange" element={<SeatExchange />} />
         <Route path="connecting-journeys" element={<ConnectingJourneys />} />
+        <Route path="auth/success" element={<AuthSuccess />} />
       </Route>
 
       {/* Fallback 404 Route */}

@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { allStations } from '../../mock/mockData';
+import { api } from '../../services/api';
 import { MapPin, Search } from 'lucide-react';
-
 export default function StationDropdown({ label, value, onChange, placeholder = "Select station" }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [stations, setStations] = useState([]);
   const wrapperRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -23,9 +23,15 @@ export default function StationDropdown({ label, value, onChange, placeholder = 
     if (isOpen && inputRef.current) inputRef.current.focus();
   }, [isOpen]);
 
-  const filtered = allStations.filter(st =>
-    st.toLowerCase().includes(query.toLowerCase())
-  );
+  useEffect(() => {
+    const fetchStations = async () => {
+      const data = await api.searchStations(query || 'a');
+      setStations(data);
+    };
+    if (isOpen) fetchStations();
+  }, [query, isOpen]);
+
+  const filtered = stations;
 
   const handleSelect = (station) => {
     onChange(station);

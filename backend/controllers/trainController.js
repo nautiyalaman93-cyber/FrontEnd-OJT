@@ -11,7 +11,7 @@
  * - GET /api/trains/search?from=NDLS&to=MMCT&date=20241225 → Search Trains
  */
 
-const railwayAPI = require('../services/apiService');
+const { createRailwayAPI } = require('../services/apiService');
 const trainMock = require('../mock/trainMock.json');
 
 // -----------------------------------------------------------------------
@@ -26,13 +26,17 @@ const getTrainStatus = async (req, res) => {
     return res.status(400).json({ message: 'Train number is required.' });
   }
 
+  const apiKey = process.env.LIVE_STATUS_API_KEY;
+  const apiHost = process.env.LIVE_STATUS_API_HOST;
+
   // Mock fallback if no API key
-  if (!process.env.RAPIDAPI_KEY) {
-    console.log('⚠️  No RAPIDAPI_KEY. Using mock train status data.');
+  if (!apiKey || !apiHost) {
+    console.log('⚠️  No LIVE_STATUS_API_KEY or LIVE_STATUS_API_HOST. Using mock train status data.');
     return res.json({ success: true, data: trainMock, isMock: true });
   }
 
   try {
+    const railwayAPI = createRailwayAPI(apiHost, apiKey);
     const response = await railwayAPI.get(`/api/v1/liveTrainStatus?trainNo=${number}&startDay=1`);
     return res.json({ success: true, data: response.data.data });
   } catch (error) {
@@ -53,9 +57,12 @@ const searchTrains = async (req, res) => {
     return res.status(400).json({ message: 'Please provide from, to, and date query params.' });
   }
 
+  const apiKey = process.env.TRAIN_SEARCH_API_KEY;
+  const apiHost = process.env.TRAIN_SEARCH_API_HOST;
+
   // Mock fallback
-  if (!process.env.RAPIDAPI_KEY) {
-    console.log('⚠️  No RAPIDAPI_KEY. Using mock train search data.');
+  if (!apiKey || !apiHost) {
+    console.log('⚠️  No TRAIN_SEARCH_API_KEY or TRAIN_SEARCH_API_HOST. Using mock train search data.');
     // Return a simplified mock train list
     const mockTrains = [
       { trainNumber: '12952', trainName: 'Mumbai Rajdhani', departure: '16:55', arrival: '08:35', duration: '15h 40m' },
@@ -66,6 +73,7 @@ const searchTrains = async (req, res) => {
   }
 
   try {
+    const railwayAPI = createRailwayAPI(apiHost, apiKey);
     const response = await railwayAPI.get(
       `/api/v3/trainBetweenStations?fromStationCode=${from}&toStationCode=${to}&dateOfJourney=${date}`
     );
@@ -76,4 +84,39 @@ const searchTrains = async (req, res) => {
   }
 };
 
-module.exports = { getTrainStatus, searchTrains };
+// -----------------------------------------------------------------------
+// @route   GET /api/trains/stations/search
+// @desc    Search stations by partial name or code
+// @access  Public
+// -----------------------------------------------------------------------
+const searchStations = async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) {
+    return res.status(400).json({ message: 'Please provide a query.' });
+  }
+
+  const apiKey = process.env.STATION_SEARCH_API_KEY;
+  const apiHost = process.env.STATION_SEARCH_API_HOST;
+
+  // Mock fallback
+  if (!apiKey || !apiHost) {
+    console.log('⚠️  No STATION_SEARCH_API_KEY or STATION_SEARCH_API_HOST. Using mock station search data.');
+    const stationMock = require('../mock/stationMock.json');
+    const matched = stationMock.filter(s => s.toLowerCase().includes(query.toLowerCase()));
+    return res.json({ success: true, data: matched, isMock: true });
+  }
+
+  try {
+    const railwayAPI = createRailwayAPI(apiHost, apiKey);
+    const response = await railwayAPI.get(`/api/v1/searchStation?query=${query}`);
+    return res.json({ success: true, data: response.data.data });
+  } catch (error) {
+    console.error('Station Search API Error:', error.message);
+    const stationMock = require('../mock/stationMock.json');
+    const matched = stationMock.filter(s => s.toLowerCase().includes(query.toLowerCase()));
+    return res.json({ success: true, data: matched, isMock: true, note: 'API failed, showing mock data.' });
+  }
+};
+
+module.exports = { getTrainStatus, searchTrains, searchStations };

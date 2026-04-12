@@ -11,13 +11,30 @@
 
 // ⚠️ Replace with real API call using .env when backend is ready
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { Authorization: `Bearer ${token}` })
+  };
+};
+
 export const sosService = {
   submitEmergency: async (data) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log("Emergency SOS Submitted:", data);
-        resolve({ success: true, refId: `EMG-${Date.now()}` });
-      }, 800);
-    });
+    try {
+      const response = await fetch(`${BASE_URL}/api/sos/trigger`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to submit SOS alert');
+      const responseData = await response.json();
+      return responseData.data;
+    } catch (error) {
+      console.error('Error submitting SOS:', error);
+      throw error;
+    }
   }
 };

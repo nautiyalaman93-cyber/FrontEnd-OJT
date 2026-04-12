@@ -10,13 +10,20 @@
 
 const axios = require('axios');
 
-// Create a custom Axios instance with RapidAPI headers
-const railwayAPI = axios.create({
-  baseURL: 'https://irctc1.p.rapidapi.com',
-  headers: {
-    'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-    'X-RapidAPI-Host': 'irctc1.p.rapidapi.com',
-  },
-});
+/**
+ * Creates an Axios instance pre-configured with RapidAPI headers.
+ * @param {string} host - The API host (e.g., 'irctc1.p.rapidapi.com')
+ * @param {string} key - The API key
+ * @returns {import('axios').AxiosInstance}
+ */
+const createRailwayAPI = (host, key) => {
+  return axios.create({
+    baseURL: `https://${host}`,
+    headers: {
+      'X-RapidAPI-Host': host,
+      'X-RapidAPI-Key': key,
+    },
+  });
+};
 
-module.exports = railwayAPI;
+module.exports = { createRailwayAPI };

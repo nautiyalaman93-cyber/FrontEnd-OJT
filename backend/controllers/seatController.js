@@ -1,47 +1,26 @@
 /**
  * @file seatController.js
  * @description Handles Seat Exchange (P2P Swap) requests.
- *
- * FEATURES:
- * - Any logged-in user can POST a swap request.
- * - Anyone can GET all open swap requests.
- * - Users can delete (close) their own requests.
- *
- * ROUTES HANDLED:
- * - POST /api/seats/request  → Create a new swap request
- * - GET  /api/seats/all      → Get all open requests
- * - DELETE /api/seats/:id    → Close/delete your own request
  */
 
 const SeatRequest = require('../models/SeatRequest');
+const Message = require('../models/Message');
 
 // -----------------------------------------------------------------------
 // @route   POST /api/seats/request
 // @desc    Create a new seat swap request
-// @access  Public (Guest Mode for now)
+// @access  Protected
 // -----------------------------------------------------------------------
 const createRequest = async (req, res) => {
   const { trainNumber, journeyDate, coach, currentSeat, wantedSeat } = req.body;
 
-  // Make sure all required fields are present
   if (!trainNumber || !journeyDate || !coach || !currentSeat || !wantedSeat) {
     return res.status(400).json({ message: 'Please fill in all fields (trainNumber, journeyDate, coach, currentSeat, wantedSeat).' });
   }
 
   try {
-    // Guest Mode: Find or create a dummy user
-    const User = require('../models/User');
-    let dummyUser = await User.findOne({ email: 'guest@bharatpath.com' });
-    if (!dummyUser) {
-      dummyUser = await User.create({
-        googleId: 'dummy_guest_id',
-        name: 'Guest User',
-        email: 'guest@bharatpath.com',
-      });
-    }
-
     const newRequest = await SeatRequest.create({
-      user: dummyUser._id, // Use dummy user ID
+      user: req.user._id, // Use actual logged in user
       trainNumber,
       journeyDate,
       coach,
@@ -50,9 +29,7 @@ const createRequest = async (req, res) => {
       status: 'open',
     });
 
-    // Send back the created request with user's name populated
     const populated = await newRequest.populate('user', 'name avatar');
-
     res.status(201).json({ success: true, data: populated });
   } catch (error) {
     console.error('Create Seat Request Error:', error.message);
@@ -63,19 +40,34 @@ const createRequest = async (req, res) => {
 // -----------------------------------------------------------------------
 // @route   GET /api/seats/all
 // @desc    Get all open seat swap requests
-// @access  Public (anyone can see the board)
+// @access  Public
 // -----------------------------------------------------------------------
 const getAllRequests = async (req, res) => {
   try {
-    // Only show "open" requests, sorted by newest first
     const requests = await SeatRequest.find({ status: 'open' })
-      .populate('user', 'name avatar') // Show who posted it
+      .populate('user', 'name avatar')
       .sort({ createdAt: -1 });
 
     res.json({ success: true, count: requests.length, data: requests });
   } catch (error) {
     console.error('Get Seat Requests Error:', error.message);
     res.status(500).json({ message: 'Failed to fetch seat requests.' });
+  }
+};
+
+// -----------------------------------------------------------------------
+// @route   GET /api/seats/my-requests
+// @desc    Get requests created by the logged in user
+// @access  Protected
+// -----------------------------------------------------------------------
+const getMyRequests = async (req, res) => {
+  try {
+    const requests = await SeatRequest.find({ user: req.user._id })
+      .sort({ createdAt: -1 });
+    res.json({ success: true, data: requests });
+  } catch (error) {
+    console.error('Get My Requests Error:', error.message);
+    res.status(500).json({ message: 'Failed to fetch your requests.' });
   }
 };
 
@@ -92,12 +84,10 @@ const deleteRequest = async (req, res) => {
       return res.status(404).json({ message: 'Seat request not found.' });
     }
 
-    // Make sure the user deleting this is the one who created it (Bypassed for Guest mode)
-    // if (request.user.toString() !== req.user._id.toString()) {
-    //   return res.status(403).json({ message: 'You can only delete your own requests.' });
-    // }
+    if (request.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'You can only delete your own requests.' });
+    }
 
-    // Mark as closed instead of permanently deleting (better for records)
     request.status = 'closed';
     await request.save();
 
@@ -108,4 +98,53 @@ const deleteRequest = async (req, res) => {
   }
 };
 
-module.exports = { createRequest, getAllRequests, deleteRequest };
+// -----------------------------------------------------------------------
+// @route   POST /api/seats/:id/message
+// @desc    Send a message to the owner of a seat request
+// @access  Protected
+// -----------------------------------------------------------------------
+const sendMessage = async (req, res) => {
+  const { text } = req.body;
+  try {
+    const request = await SeatRequest.findById(req.params.id);
+    if (!request) return res.status(404).json({ message: 'Seat request not found.' });
+
+    const message = await Message.create({
+      seatRequest: request._id,
+      sender: req.user._id,
+      receiver: request.user,
+      text
+    });
+
+    res.status(201).json({ success: true, data: message });
+  } catch (error) {
+    console.error('Send Message Error:', error.message);
+    res.status(500).json({ message: 'Failed to send message.' });
+  }
+};
+
+// -----------------------------------------------------------------------
+// @route   GET /api/seats/:id/messages
+// @desc    Get all messages for a specific seat request (only for sender or receiver)
+// @access  Protected
+// -----------------------------------------------------------------------
+const getMessages = async (req, res) => {
+  try {
+    const messages = await Message.find({ seatRequest: req.params.id })
+      .populate('sender', 'name avatar')
+      .sort({ createdAt: 1 });
+      
+    // Basic filter: only return messages if current user is involved
+    const filtered = messages.filter(msg => 
+      msg.sender._id.toString() === req.user._id.toString() || 
+      msg.receiver.toString() === req.user._id.toString()
+    );
+
+    res.json({ success: true, data: filtered });
+  } catch (error) {
+    console.error('Get Messages Error:', error.message);
+    res.status(500).json({ message: 'Failed to fetch messages.' });
+  }
+};
+
+module.exports = { createRequest, getAllRequests, getMyRequests, deleteRequest, sendMessage, getMessages };
