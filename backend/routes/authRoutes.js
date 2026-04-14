@@ -21,18 +21,27 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 
 // Step 2: Google calls this after the user approves. Passport handles verification.
 router.get('/google/callback', (req, res, next) => {
-  passport.authenticate('google', { session: false }, (err, user, info) => {
-    if (err) {
-      console.error('Google OAuth Error:', err);
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?login_error=server_error`);
-    }
-    if (!user) {
-      console.error('Google OAuth: No user returned', info);
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?login_error=auth_failed`);
-    }
-    req.user = user;
-    googleCallback(req, res);
-  })(req, res, next);
+  try {
+    passport.authenticate('google', { session: false }, (err, user, info) => {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      if (err) {
+        console.error('Google OAuth Error:', err);
+        return res.redirect(`${frontendUrl}/?login_error=${encodeURIComponent(err.message || 'server_error')}`);
+      }
+      if (!user) {
+        console.error('Google OAuth: No user returned', info);
+        const reason = info?.message || info || 'no_user_returned';
+        return res.redirect(`${frontendUrl}/?login_error=${encodeURIComponent(String(reason))}`);
+      }
+      // Success - generate token and redirect
+      req.user = user;
+      googleCallback(req, res);
+    })(req, res, next);
+  } catch (e) {
+    console.error('Callback crash:', e);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/?login_error=${encodeURIComponent(e.message || 'crash')}`);
+  }
 });
 
 // Get current logged-in user's info (requires JWT)
