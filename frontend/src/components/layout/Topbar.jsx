@@ -10,7 +10,8 @@ export default function Topbar() {
   const isDark = theme === 'dark';
 
   const handleLogin = () => {
-    window.location.href = 'http://localhost:5000/api/auth/google';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    window.location.href = `${backendUrl}/api/auth/google`;
   };
 
   const links = [
