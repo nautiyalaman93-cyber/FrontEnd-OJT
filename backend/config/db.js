@@ -23,11 +23,15 @@ const connectDB = async () => {
       console.log(`✅ In-Memory MongoDB Started: ${uri}`);
     }
 
-    const conn = await mongoose.connect(uri);
+    const conn = await mongoose.connect(uri, {
+      bufferCommands: false, // Don't queue queries if not connected
+      serverSelectionTimeoutMS: 5000, // Fail fast if host unreachable
+    });
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    // process.exit(1); // Removed so server can still run for demo purposes
+    // If we fail here, at least logs will show the real problem (e.g. IP blocked)
+    throw error; // Re-throw so server.js can handle it or log it better
   }
 };
 

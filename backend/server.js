@@ -21,7 +21,23 @@ dotenv.config();
 
 // Connect to MongoDB
 const connectDB = require('./config/db');
-connectDB();
+
+// Start backend
+const startServer = async () => {
+  try {
+    await connectDB();
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`\n🚀 BharatPath Backend running on port ${PORT}`);
+      console.log(`📡 Health check: http://localhost:${PORT}/api\n`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 // Load Passport Google OAuth strategy
 require('./config/passport');
@@ -108,11 +124,4 @@ app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.originalUrl} not found on this server.` });
 });
 
-// -----------------------------------------------------------------------
-// Start the Server
-// -----------------------------------------------------------------------
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`\n🚀 BharatPath Backend running on http://localhost:${PORT}`);
-  console.log(`📡 Health check: http://localhost:${PORT}/api\n`);
-});
+
