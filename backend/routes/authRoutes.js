@@ -17,7 +17,11 @@ const { protect } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // Step 1: Redirect user to Google's login page
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', passport.authenticate('google', { 
+  scope: ['profile', 'email'],
+  prompt: 'select_account',
+  callbackURL: 'https://bhartpath-api.onrender.com/api/auth/google/callback'
+}));
 
 // Step 2: Google calls this after the user approves. Passport handles verification.
 router.get('/google/callback', (req, res, next) => {
