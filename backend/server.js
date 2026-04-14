@@ -59,8 +59,12 @@ app.use(express.json());
 app.use(session({
   secret: process.env.JWT_SECRET || 'bharatpath_session_secret',
   resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false }
+  saveUninitialized: true,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 10 * 60 * 1000, // 10 minutes for OAuth flow
+  }
 }));
 
 // Initialize Passport (needed even for JWT strategy)

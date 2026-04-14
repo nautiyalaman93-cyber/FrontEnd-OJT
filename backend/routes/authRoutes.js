@@ -20,11 +20,20 @@ const router = express.Router();
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 // Step 2: Google calls this after the user approves. Passport handles verification.
-router.get(
-  '/google/callback',
-  passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login?error=auth_failed`, session: false }),
-  googleCallback // Our controller creates the JWT and redirects to frontend
-);
+router.get('/google/callback', (req, res, next) => {
+  passport.authenticate('google', { session: false }, (err, user, info) => {
+    if (err) {
+      console.error('Google OAuth Error:', err);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?login_error=server_error`);
+    }
+    if (!user) {
+      console.error('Google OAuth: No user returned', info);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?login_error=auth_failed`);
+    }
+    req.user = user;
+    googleCallback(req, res);
+  })(req, res, next);
+});
 
 // Get current logged-in user's info (requires JWT)
 router.get('/me', protect, getMe);
