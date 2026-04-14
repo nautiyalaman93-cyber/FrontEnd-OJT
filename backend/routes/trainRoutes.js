@@ -8,7 +8,7 @@
  */
 
 const express = require('express');
-const { getTrainStatus, searchTrains, searchStations } = require('../controllers/trainController');
+const { getTrainStatus, searchTrains, searchStations, getConnectingJourneys } = require('../controllers/trainController');
 
 const router = express.Router();
 
@@ -20,5 +20,8 @@ router.get('/search', searchTrains);
 
 // Search stations
 router.get('/stations/search', searchStations);
+
+// Connecting journeys
+router.get('/connecting', getConnectingJourneys);
 
 module.exports = router;

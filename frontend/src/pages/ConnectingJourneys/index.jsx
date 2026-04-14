@@ -7,33 +7,7 @@ import { useState } from 'react';
 import { ArrowRight, Clock, Route, Search, ArrowLeftRight, Train, MapPin } from 'lucide-react';
 import StationDropdown from '../../components/ui/StationDropdown';
 
-/* Mock route data — shown only after search */
-const mockRoutes = [
-  {
-    label: 'Option 1: via Vadodara',
-    reliability: 'High Reliability',
-    totalDuration: '21h 50m',
-    legs: [
-      { train: '12952 Rajdhani', from: 'New Delhi', to: 'Vadodara', time: '16:25 – 03:52' },
-    ],
-    layover: { station: 'Vadodara Jn', duration: '2h 15m' },
-    legs2: [
-      { train: '16345 Netravati', from: 'Vadodara', to: 'Ernakulam', time: '06:07 – 14:15' },
-    ],
-  },
-  {
-    label: 'Option 2: via Mumbai',
-    reliability: 'Standard',
-    totalDuration: '28h 20m',
-    legs: [
-      { train: '12952 Rajdhani', from: 'New Delhi', to: 'Mumbai Central', time: '16:25 – 08:35' },
-    ],
-    layover: { station: 'Mumbai Central', duration: '4h 45m' },
-    legs2: [
-      { train: '16312 Kochuveli Exp', from: 'Mumbai Central', to: 'Ernakulam', time: '13:20 – 16:40' },
-    ],
-  },
-];
+import { api } from '../../services/api';
 
 export default function ConnectingJourneys() {
   const [fromStation, setFromStation] = useState('');
@@ -41,20 +15,24 @@ export default function ConnectingJourneys() {
   const [hasSearched, setHasSearched] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
+  const [routes, setRoutes] = useState([]);
+
   const handleSwap = () => {
     const temp = fromStation;
     setFromStation(toStation);
     setToStation(temp);
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!fromStation || !toStation) return;
     setIsSearching(true);
     setHasSearched(false);
-    setTimeout(() => {
-      setIsSearching(false);
-      setHasSearched(true);
-    }, 600);
+    
+    const fetchedRoutes = await api.getConnectingJourneys(fromStation, toStation);
+    setRoutes(fetchedRoutes);
+    
+    setIsSearching(false);
+    setHasSearched(true);
   };
 
   return (
@@ -166,7 +144,7 @@ export default function ConnectingJourneys() {
               className="text-[17px] font-bold"
               style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}
             >
-              {mockRoutes.length} connecting routes found
+              {routes.length} connecting routes found
             </h2>
             <div
               className="text-[11px] font-bold px-3 py-0.5 rounded-full"
@@ -180,7 +158,7 @@ export default function ConnectingJourneys() {
             </div>
           </div>
 
-          {mockRoutes.map((route, rIdx) => (
+          {routes.map((route, rIdx) => (
             <div key={rIdx} className={`bp-card overflow-hidden anim-fade-up anim-delay-${rIdx + 1}`}>
 
               {/* Route header */}

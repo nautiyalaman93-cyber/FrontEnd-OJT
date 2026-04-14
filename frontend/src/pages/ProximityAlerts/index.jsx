@@ -3,22 +3,64 @@
  * @description GPS-triggered destination alarms — theme-aware, animated.
  */
 
-import { useState } from 'react';
-import { MapPin, Bell, BellRing, Gauge, RadioTower, LocateFixed } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MapPin, Bell, BellRing, Gauge, RadioTower, LocateFixed, LogIn } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { alertService } from '../../services/alertService';
 import StationDropdown from '../../components/ui/StationDropdown';
 
 export default function ProximityAlerts() {
-  const [distance, setDistance] = useState(15);
-  const [targetStation, setTargetStation] = useState('');
-  const [trainNumber, setTrainNumber] = useState('');
-  const [isActive, setIsActive] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [alertSet, setAlertSet] = useState(false);
+  const [activeAlertId, setActiveAlertId] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const { user } = useAuth();
 
-  const handleActivate = () => {
-    if (!targetStation || !trainNumber) return;
+  useEffect(() => {
+    if (user) {
+      loadAlerts();
+    }
+  }, [user]);
+
+  const loadAlerts = async () => {
+    const alerts = await alertService.getAlerts();
+    if (alerts.length > 0) {
+      const current = alerts[0]; // just take the most recent active one for now
+      setTrainNumber(current.trainNumber);
+      setTargetStation(current.targetStation);
+      setDistance(current.distanceKm);
+      setIsActive(true);
+      setAlertSet(true);
+      setActiveAlertId(current._id);
+    }
+  };
+
+  const handleActivate = async () => {
+    if (!targetStation || !trainNumber || !user) return;
+    setIsProcessing(true);
     setHasSearched(true);
-    setAlertSet(true);
+    
+    try {
+      const newAlert = await alertService.createAlert(trainNumber, targetStation, distance);
+      setActiveAlertId(newAlert._id);
+      setAlertSet(true);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to set alarm.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (activeAlertId) {
+      await alertService.cancelAlert(activeAlertId);
+    }
+    setAlertSet(false);
+    setIsActive(false);
+    setHasSearched(false);
+    setTargetStation('');
+    setTrainNumber('');
+    setActiveAlertId(null);
   };
 
   return (
@@ -151,13 +193,18 @@ export default function ProximityAlerts() {
 
             {/* Save / activate button */}
             <div className="pt-4 border-t anim-fade-up anim-delay-4" style={{ borderColor: 'var(--border)' }}>
+              {!user ? (
+                <div className="p-3 mb-2 rounded-xl text-center text-[12px] font-semibold flex items-center justify-center gap-2" style={{ background: 'var(--warning-light)', color: 'var(--warning)' }}>
+                  <LogIn size={14} /> You must be logged in to set alarms.
+                </div>
+              ) : null}
               <button
                 className="bp-btn bp-btn--primary w-full py-3 text-[14px] font-bold flex items-center justify-center gap-2"
-                disabled={!isActive || !targetStation || !trainNumber}
+                disabled={!isActive || !targetStation || !trainNumber || !user || isProcessing}
                 onClick={handleActivate}
               >
                 <LocateFixed size={16} />
-                SET ALARM
+                {isProcessing ? 'SAVING...' : 'SET ALARM'}
               </button>
             </div>
           </div>
@@ -188,11 +235,7 @@ export default function ProximityAlerts() {
               {targetStation}
             </p>
             <button
-              onClick={() => {
-                setAlertSet(false);
-                setIsActive(false);
-                setHasSearched(false);
-              }}
+              onClick={handleCancel}
               className="bp-btn py-2.5 px-6 text-[13px] font-bold uppercase tracking-wide transition-all"
               style={{
                 background: 'transparent',

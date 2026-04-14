@@ -31,6 +31,7 @@ const pnrRoutes = require('./routes/pnrRoutes');
 const trainRoutes = require('./routes/trainRoutes');
 const seatRoutes = require('./routes/seatRoutes');
 const sosRoutes = require('./routes/sosRoutes');
+const alertRoutes = require('./routes/alertRoutes');
 
 // Initialize Express app
 const app = express();
@@ -62,6 +63,7 @@ app.use('/api/pnr', pnrRoutes);         // PNR Status
 app.use('/api/trains', trainRoutes);    // Live Status + Train Search
 app.use('/api/seats', seatRoutes);      // Seat Exchange Board
 app.use('/api/sos', sosRoutes);         // SOS Emergency Alerts
+app.use('/api/alerts', alertRoutes);    // Proximity Alerts
 
 // -----------------------------------------------------------------------
 // Health Check Route — Open http://localhost:5000/api in your browser

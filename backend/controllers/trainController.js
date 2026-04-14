@@ -119,4 +119,48 @@ const searchStations = async (req, res) => {
   }
 };
 
-module.exports = { getTrainStatus, searchTrains, searchStations };
+// -----------------------------------------------------------------------
+// @route   GET /api/trains/connecting
+// @desc    Search for connecting journeys (mock fallback implemented)
+// @access  Public
+// -----------------------------------------------------------------------
+const getConnectingJourneys = async (req, res) => {
+  const { from, to } = req.query;
+
+  if (!from || !to) {
+    return res.status(400).json({ message: 'Please provide from and to query params.' });
+  }
+
+  // Currently returns mock data for UI functionality
+  // In a real scenario, this would chain API calls to locate routes with layovers.
+  const mockRoutes = [
+    {
+      label: 'Option 1: via Vadodara',
+      reliability: 'High Reliability',
+      totalDuration: '21h 50m',
+      legs: [
+        { train: '12952 Rajdhani', from: from.split(' | ')[0] || 'Origin', to: 'Vadodara', time: '16:25 – 03:52' },
+      ],
+      layover: { station: 'Vadodara Jn', duration: '2h 15m' },
+      legs2: [
+        { train: '16345 Netravati', from: 'Vadodara', to: to.split(' | ')[0] || 'Dest', time: '06:07 – 14:15' },
+      ],
+    },
+    {
+      label: 'Option 2: via Mumbai',
+      reliability: 'Standard',
+      totalDuration: '28h 20m',
+      legs: [
+        { train: '12952 Rajdhani', from: from.split(' | ')[0] || 'Origin', to: 'Mumbai Central', time: '16:25 – 08:35' },
+      ],
+      layover: { station: 'Mumbai Central', duration: '4h 45m' },
+      legs2: [
+        { train: '16312 Kochuveli Exp', from: 'Mumbai Central', to: to.split(' | ')[0] || 'Dest', time: '13:20 – 16:40' },
+      ],
+    },
+  ];
+
+  return res.json({ success: true, data: mockRoutes, isMock: true });
+};
+
+module.exports = { getTrainStatus, searchTrains, searchStations, getConnectingJourneys };

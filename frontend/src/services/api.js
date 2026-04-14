@@ -57,4 +57,17 @@ export const api = {
       return null;
     }
   },
+
+  // --- 5. Connecting Journeys ---
+  getConnectingJourneys: async (from, to) => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/trains/connecting?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.data || [];
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  },
 };
