@@ -114,6 +114,10 @@ app.get('/api', (req, res) => {
       seats: '/api/seats/all | /api/seats/request',
       sos: '/api/sos/trigger',
     },
+    database: {
+      connected: mongoose.connection.readyState === 1,
+      host: mongoose.connection.host || 'Disconnected',
+    }
   });
 });
 
