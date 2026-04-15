@@ -15,12 +15,19 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const passport = require('passport');
 const session = require('express-session');
+const mongoose = require('mongoose');
 
 // Load environment variables FIRST before anything else
 dotenv.config();
 
 // Connect to MongoDB
 const connectDB = require('./config/db');
+
+// Initialize Express app
+const app = express();
+
+// Trust Render's proxy to handle HTTPS correctly
+app.set('trust proxy', 1);
 
 // Start backend
 const startServer = async () => {
@@ -37,8 +44,6 @@ const startServer = async () => {
   }
 };
 
-startServer();
-
 // Load Passport Google OAuth strategy
 require('./config/passport');
 
@@ -50,11 +55,7 @@ const seatRoutes = require('./routes/seatRoutes');
 const sosRoutes = require('./routes/sosRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 
-// Initialize Express app
-const app = express();
 
-// Trust Render's proxy to handle HTTPS correctly
-app.set('trust proxy', 1);
 
 // -----------------------------------------------------------------------
 // Middleware Setup
@@ -127,5 +128,4 @@ app.get('/api', (req, res) => {
 app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.originalUrl} not found on this server.` });
 });
-
-
+startServer();
