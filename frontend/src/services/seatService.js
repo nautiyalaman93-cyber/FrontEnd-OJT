@@ -65,12 +65,15 @@ export const seatService = {
   },
 
   // --- Messages ---
-  sendMessage: async (requestId, text) => {
+  sendMessage: async (requestId, text, receiverId = null) => {
     try {
+      const body = { text };
+      if (receiverId) body.receiverId = receiverId;
+
       const response = await fetch(`${BASE_URL}/api/seats/${requestId}/message`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ text }),
+        body: JSON.stringify(body),
       });
       if (!response.ok) throw new Error('Failed to send message');
       const responseData = await response.json();
@@ -92,6 +95,21 @@ export const seatService = {
     } catch (error) {
       console.error('Error fetching messages:', error);
       return [];
+    }
+  },
+
+  deleteRequest: async (requestId) => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/seats/${requestId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to delete seat request');
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error deleting seat request:', error);
+      throw error;
     }
   }
 };

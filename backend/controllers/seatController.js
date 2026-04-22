@@ -108,23 +108,39 @@ const deleteRequest = async (req, res) => {
 // @access  Protected
 // -----------------------------------------------------------------------
 const sendMessage = async (req, res) => {
-  const { text } = req.body;
+  const { text, receiverId } = req.body;
   try {
     const request = await SeatRequest.findById(req.params.id);
     if (!request) return res.status(404).json({ message: 'Seat request not found.' });
 
-    if (request.user.toString() === req.user._id.toString()) {
+    // Determine receiver:
+    // 1. If sender is someone ELSE, receiver is automatically the request owner.
+    // 2. If sender is the OWNER, they must provide a receiverId (the person they are replying to).
+    let receiver = request.user;
+    
+    const isOwner = request.user.toString() === req.user._id.toString();
+    
+    if (isOwner) {
+      if (!receiverId) {
+        return res.status(400).json({ message: 'As the owner, you must provide a receiverId to reply.' });
+      }
+      receiver = receiverId;
+    }
+
+    // Safety check: Cannot message yourself
+    if (receiver.toString() === req.user._id.toString()) {
       return res.status(400).json({ message: 'You cannot send a message to yourself.' });
     }
 
     const message = await Message.create({
       seatRequest: request._id,
       sender: req.user._id,
-      receiver: request.user,
+      receiver,
       text
     });
 
-    res.status(201).json({ success: true, data: message });
+    const populated = await message.populate('sender', 'name avatar');
+    res.status(201).json({ success: true, data: populated });
   } catch (error) {
     console.error('Send Message Error:', error.message);
     res.status(500).json({ message: 'Failed to send message.' });

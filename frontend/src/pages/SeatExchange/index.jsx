@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import {
   User, RefreshCcw, AlertTriangle, ArrowRightLeft,
   Clock, Info, Search, Train, CheckCircle2, XCircle,
-  MessageSquare, Send, ChevronDown, ChevronUp, FileText, Frown
+  MessageSquare, Send, ChevronDown, ChevronUp, FileText, Frown, 
+  Trash2
 } from 'lucide-react';
 
 import { seatService } from '../../services/seatService';
@@ -32,6 +33,7 @@ export default function SeatExchange() {
   const [fetchLoading, setFetchLoading] = useState(false);
   const [expandedReq, setExpandedReq] = useState(null);
   const [reqMessages, setReqMessages] = useState({});
+  const [replyTo, setReplyTo] = useState(null); // { userId, userName, requestId }
 
   const requests = hasSearched
     ? allRequests.filter(req => req.trainNumber === trainNumber)
@@ -101,27 +103,51 @@ export default function SeatExchange() {
   };
 
   const handleSendMessage = async () => {
-    if (!selectedReq || !msgText.trim()) return;
+    if (!selectedReq && !replyTo) return;
+    if (!msgText.trim()) return;
+
     if (!user) {
       alert('You need to login first to send a message. Please click the Login button.');
       setSelectedReq(null);
+      setReplyTo(null);
       return;
     }
+
     setIsSending(true);
     try {
-      await seatService.sendMessage(selectedReq._id, msgText);
+      const requestId = replyTo ? replyTo.requestId : selectedReq._id;
+      const receiverId = replyTo ? replyTo.userId : null;
+
+      await seatService.sendMessage(requestId, msgText, receiverId);
+      
       setSelectedReq(null);
+      setReplyTo(null);
       setMsgText('');
-      alert('Message sent successfully! The passenger will see it in their inbox.');
+      alert('Message sent successfully!');
+      
+      // If we were replying in the main view, refresh that thread if possible
+      if (requestId === expandedReq) {
+        loadMessages(requestId);
+      }
     } catch (err) {
       console.error(err);
-      // Check if it's an auth error
       const msg = err?.response?.status === 401 || err?.message?.includes('401')
         ? 'Session expired. Please logout and login again.'
         : 'Failed to send message. Please try again.';
       alert(msg);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleDelete = async (requestId) => {
+    if (!window.confirm('Are you sure you want to close this swap request? It will no longer be visible to others.')) return;
+    try {
+      await seatService.deleteRequest(requestId);
+      setMyRequests(prev => prev.filter(r => r._id !== requestId));
+      alert('Request closed successfully.');
+    } catch (err) {
+      alert('Failed to delete request.');
     }
   };
 
@@ -287,14 +313,24 @@ export default function SeatExchange() {
                               Swapping <strong style={{ color: 'var(--text-primary)' }}>{req.currentSeat}</strong> for <strong style={{ color: 'var(--primary)' }}>{req.wantedSeat}</strong>
                             </div>
                           </div>
-                          <button 
-                            onClick={() => setExpandedReq(expandedReq === req._id ? null : req._id)}
-                            className="bp-btn bp-btn--secondary flex items-center gap-2"
-                            style={{ padding: '8px 16px' }}
-                          >
-                            <MessageSquare size={16} /> 
-                            {reqMessages[req._id]?.length || 0}
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={() => setExpandedReq(expandedReq === req._id ? null : req._id)}
+                              className="bp-btn bp-btn--secondary flex items-center gap-2"
+                              style={{ padding: '8px 16px' }}
+                            >
+                              <MessageSquare size={16} /> 
+                              {reqMessages[req._id]?.length || 0}
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(req._id)}
+                              className="bp-btn"
+                              style={{ padding: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                              title="Delete Request"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
                         </div>
                         
                         {/* Messages Dropdown */}
@@ -313,8 +349,21 @@ export default function SeatExchange() {
                                         maxWidth: '80%'
                                       }}
                                     >
-                                      <p className="text-xs uppercase font-semibold opacity-60 mb-1" style={{ color: m.sender._id === user._id ? 'var(--primary)' : 'var(--text-secondary)' }}>{m.sender.name}</p>
-                                      <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{m.text}</p>
+                                      <div className="flex justify-between items-start gap-4">
+                                        <div>
+                                          <p className="text-xs uppercase font-semibold opacity-60 mb-1" style={{ color: m.sender._id === user._id ? 'var(--primary)' : 'var(--text-secondary)' }}>{m.sender.name}</p>
+                                          <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{m.text}</p>
+                                        </div>
+                                        {m.sender._id !== user._id && (
+                                          <button 
+                                            onClick={() => setReplyTo({ userId: m.sender._id, userName: m.sender.name, requestId: req._id })}
+                                            className="text-[10px] font-bold uppercase tracking-wider text-primary hover:opacity-80 flex items-center gap-1"
+                                            style={{ color: 'var(--primary)', background: 'rgba(255,107,0,0.1)', padding: '4px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+                                          >
+                                            <Send size={10} /> Reply
+                                          </button>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
@@ -425,8 +474,8 @@ export default function SeatExchange() {
 
       </div>
 
-      {/* ═══ Message Modal ═══ */}
-      {selectedReq && (
+       {/* ═══ Message Modal (Passenger Connect & Owner Reply) ═══ */}
+      {(selectedReq || replyTo) && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1000,
           background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
@@ -434,9 +483,11 @@ export default function SeatExchange() {
         }}>
           <div className="train-card anim-scale-in" style={{ width: '100%', maxWidth: '450px', margin: 0, padding: '32px' }}>
             <div className="flex justify-between items-center mb-6 border-b border-[var(--border)] pb-4">
-              <h3 className="text-xl font-semibold font-serif" style={{ color: 'var(--text-heading)' }}>Message Passenger</h3>
+              <h3 className="text-xl font-semibold font-serif" style={{ color: 'var(--text-heading)' }}>
+                {replyTo ? `Reply to ${replyTo.userName}` : 'Message Passenger'}
+              </h3>
               <button 
-                onClick={() => setSelectedReq(null)}
+                onClick={() => { setSelectedReq(null); setReplyTo(null); }}
                 className="bp-icon-hover"
                 style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '50%', padding: '6px', color: 'var(--text-muted)', cursor: 'pointer' }}
               >
