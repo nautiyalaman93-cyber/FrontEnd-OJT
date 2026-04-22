@@ -140,26 +140,26 @@ export default function SeatExchange() {
 
       {/* ═══ Header ═══ */}
       <section
-        className="py-6 mb-8 border-b anim-fade-in"
-        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+        className="py-10 mb-8 border-b anim-fade-in relative overflow-hidden backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 shadow-sm"
+        style={{ borderColor: 'var(--border)' }}
       >
-        <div className="max-w-[1050px] mx-auto px-4 anim-slide-left">
-          <div className="flex items-center gap-3">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="max-w-[1050px] mx-auto px-4 anim-slide-left relative z-10">
+          <div className="flex items-center gap-4">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: 'var(--primary-light)', border: '1px solid var(--border)' }}
+              className="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg shadow-orange-500/30"
             >
-              <ArrowRightLeft size={20} style={{ color: 'var(--primary)' }} />
+              <ArrowRightLeft size={22} className="text-white" />
             </div>
             <div>
               <h1
-                className="text-xl font-bold"
-                style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}
+                className="text-2xl font-extrabold tracking-tight"
+                style={{ color: 'var(--text-heading)', fontFamily: "'Inter', sans-serif" }}
               >
                 P2P Seat Exchange
               </h1>
-              <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>
-                Find co-passengers on the same train and negotiate seat swaps.
+              <p className="text-[14px] font-medium opacity-80" style={{ color: 'var(--text-secondary)' }}>
+                Find co-passengers on the same train and negotiate seat swaps instantly.
               </p>
             </div>
           </div>
@@ -167,37 +167,39 @@ export default function SeatExchange() {
       </section>
 
       {/* ═══ Search Card — Train Number ═══ */}
-      <section className="max-w-[1050px] mx-auto px-4 mb-8">
-        <div className="bp-card p-5 anim-fade-up">
-          <div className="flex flex-col sm:flex-row items-end gap-4">
+      <section className="max-w-[1050px] mx-auto px-4 mb-10">
+        <div className="p-6 anim-fade-up backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 shadow-xl border border-white/20 dark:border-slate-700/50 rounded-2xl relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute bottom-0 right-1/4 w-32 h-32 bg-rose-500/5 rounded-full blur-2xl translate-y-1/2" />
+          
+          <div className="flex flex-col sm:flex-row items-end gap-5 relative z-10">
             <div className="flex-1 w-full">
-              <label className="bp-label">Train Number</label>
-              <div className="flex items-center gap-2">
+              <label className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-2 block">Train Number</label>
+              <div className="flex items-center gap-3">
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ background: 'var(--primary-light)', border: '1px solid var(--border)' }}
+                  className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20"
                 >
-                  <Train size={18} style={{ color: 'var(--primary)' }} />
+                  <Train size={20} className="text-orange-500" />
                 </div>
                 <input
-                  className="bp-input"
+                  className="bp-input flex-1 h-12 text-lg font-bold bg-slate-50/50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all rounded-xl"
                   type="text"
-                  placeholder="Enter train number (e.g. 12952)"
+                  placeholder="e.g. 12952"
                   value={trainNumber}
                   onChange={(e) => setTrainNumber(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
               </div>
-              <p className="text-[11px] mt-1.5 font-medium" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[11px] mt-2 font-medium" style={{ color: 'var(--text-muted)' }}>
                 Both passengers must be on the same train for seat exchange.
               </p>
             </div>
             <button
-              className="bp-btn bp-btn--primary px-8 py-3 text-[14px] font-bold flex items-center gap-2 shrink-0"
+              className="h-12 px-8 text-[14px] font-bold uppercase tracking-wide flex items-center justify-center gap-2 shrink-0 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSearch}
               disabled={!trainNumber.trim() || isSearching}
             >
-              <Search size={16} />
+              <Search size={18} />
               {isSearching ? 'Searching…' : 'FIND SWAPS'}
             </button>
           </div>
@@ -210,10 +212,13 @@ export default function SeatExchange() {
 
           {/* Results heading */}
           <div className="flex items-center gap-3 anim-fade-up">
-            <div className="w-1.5 h-6 rounded-full" style={{ background: 'var(--primary)' }} />
+            <div className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+            </div>
             <h2
-              className="text-[17px] font-bold"
-              style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}
+              className="text-[18px] font-extrabold tracking-tight"
+              style={{ color: 'var(--text-heading)' }}
             >
               Train {trainNumber}
             </h2>
@@ -273,81 +278,71 @@ export default function SeatExchange() {
                       requests.map((req, idx) => (
                         <div
                           key={req._id}
-                          className={`p-5 flex flex-col sm:flex-row items-center justify-between gap-5 border-b last:border-0 transition-all duration-200 anim-fade-up anim-delay-${Math.min(idx + 3, 6)}`}
-                          style={{ borderColor: 'var(--border-light)' }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'var(--bg-hover)';
-                            e.currentTarget.style.transform = 'translateX(4px)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.transform = 'translateX(0)';
-                          }}
+                          className={`relative p-0 flex flex-col sm:flex-row items-stretch justify-between gap-0 mb-6 transition-all duration-300 anim-fade-up anim-delay-${Math.min(idx + 3, 6)} bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 border border-slate-200 dark:border-slate-700 overflow-hidden group`}
                         >
-                          <div className="flex items-start gap-4 w-full">
+                          {/* Ticket Left Section */}
+                          <div className="flex-1 p-5 border-b sm:border-b-0 sm:border-r-2 border-dashed border-slate-200 dark:border-slate-700 flex items-start gap-4 w-full relative bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/80">
+                            {/* Cut-out semi circles for ticket effect */}
+                            <div className="hidden sm:block absolute -top-3 -right-3 w-6 h-6 rounded-full bg-slate-50 dark:bg-slate-900 border-b border-l border-slate-200 dark:border-slate-700" style={{ zIndex: 2 }} />
+                            <div className="hidden sm:block absolute -bottom-3 -right-3 w-6 h-6 rounded-full bg-slate-50 dark:bg-slate-900 border-t border-l border-slate-200 dark:border-slate-700" style={{ zIndex: 2 }} />
+                            
                             <div
-                              className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-[15px] font-bold"
-                              style={{
-                                background: 'var(--secondary-light)',
-                                border: '1px solid var(--secondary)',
-                                color: 'var(--secondary)',
-                              }}
+                              className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 text-[16px] font-extrabold bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-300 shadow-inner"
                             >
                               {req.user?.name ? req.user.name.charAt(0) : 'U'}
                             </div>
 
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-3 mb-1 flex-wrap">
-                                <p className="font-bold text-[15px]" style={{ color: 'var(--text-heading)' }}>{req.user?.name || 'Unknown User'}</p>
+                              <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                <p className="font-extrabold text-[16px]" style={{ color: 'var(--text-heading)' }}>{req.user?.name || 'Unknown User'}</p>
                                 <span
-                                  className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                  style={{ color: 'var(--text-muted)', background: 'var(--bg-surface-2)' }}
+                                  className="flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
                                 >
-                                  <Clock size={9} /> {new Date(req.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  <Clock size={10} /> {new Date(req.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                                 <span
-                                  className="text-[10px] font-bold px-2 py-0.5 rounded"
-                                  style={{ color: 'var(--secondary)', background: 'var(--secondary-light)' }}
+                                  className="text-[10px] font-bold px-2.5 py-1 rounded shadow-sm bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800"
                                 >
                                   Coach {req.coach}
                                 </span>
                               </div>
 
                               <div
-                                className="flex items-center gap-3 mt-2 p-2.5 rounded-lg w-fit"
-                                style={{ background: 'var(--bg-surface-2)', border: '1px solid var(--border-light)' }}
+                                className="flex items-center justify-between gap-3 mt-3 p-3 rounded-xl w-full max-w-sm bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700"
                               >
-                                <div className="text-center px-2">
-                                  <p className="text-[10px] uppercase font-bold mb-0.5" style={{ color: 'var(--text-muted)' }}>Has</p>
-                                  <p className="text-[12px] font-bold" style={{ color: 'var(--text-primary)' }}>{req.currentSeat}</p>
+                                <div className="text-left px-2">
+                                  <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Has</p>
+                                  <p className="text-[14px] font-extrabold text-slate-700 dark:text-slate-200">{req.currentSeat}</p>
                                 </div>
                                 <div
-                                  className="w-7 h-7 rounded-full flex items-center justify-center"
-                                  style={{ background: 'var(--primary-light)', border: '1px solid var(--primary)' }}
+                                  className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-500 shadow-md shadow-orange-500/20 group-hover:rotate-180 transition-transform duration-500"
                                 >
-                                  <ArrowRightLeft size={12} style={{ color: 'var(--primary)' }} />
+                                  <ArrowRightLeft size={14} className="text-white" />
                                 </div>
-                                <div className="text-center px-2">
-                                  <p className="text-[10px] uppercase font-bold mb-0.5" style={{ color: 'var(--text-muted)' }}>Needs</p>
-                                  <p className="text-[12px] font-bold" style={{ color: 'var(--primary)' }}>{req.wantedSeat}</p>
+                                <div className="text-right px-2">
+                                  <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Needs</p>
+                                  <p className="text-[14px] font-extrabold text-orange-500">{req.wantedSeat}</p>
                                 </div>
                               </div>
                             </div>
                           </div>
 
-                          {user?._id !== req.user?._id ? (
-                            <button
-                              className="bp-btn bp-btn--outline w-full sm:w-auto px-6 py-2.5 text-[13px] font-bold shrink-0"
-                              onClick={() => {
-                                if (!user) return alert('Please login to connect');
-                                setSelectedReq(req);
-                              }}
-                            >
-                              Connect
-                            </button>
-                          ) : (
-                            <span className="text-[12px] font-bold text-slate-400 border border-slate-200 rounded-lg px-4 py-2 self-center">Your Request</span>
-                          )}
+                          {/* Ticket Right Section (Action) */}
+                          <div className="w-full sm:w-48 p-5 flex items-center justify-center bg-slate-50/50 dark:bg-slate-800/30">
+                            {user?._id !== req.user?._id ? (
+                              <button
+                                className="w-full py-3.5 px-4 rounded-xl text-[13px] font-bold uppercase tracking-wide bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white shadow-xl shadow-slate-900/10 transition-all hover:scale-105"
+                                onClick={() => {
+                                  if (!user) return alert('Please login to connect');
+                                  setSelectedReq(req);
+                                }}
+                              >
+                                Connect
+                              </button>
+                            ) : (
+                              <span className="text-[12px] font-bold text-slate-400 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl px-5 py-3 text-center uppercase tracking-wider w-full">Your Request</span>
+                            )}
+                          </div>
                         </div>
                       ))
                     ) : (
@@ -482,21 +477,20 @@ export default function SeatExchange() {
             )}
 
             {/* ═══ Post Request sidebar ═══ */}
-            <div className="bp-card h-fit sticky top-24 anim-fade-up anim-delay-3">
-              <div
-                className="px-6 py-4 border-b"
-                style={{ borderColor: 'var(--border)', background: 'var(--bg-surface-2)' }}
-              >
-                <h3
-                  className="font-bold text-[15px] uppercase flex items-center gap-2 tracking-wide"
-                  style={{ color: 'var(--text-heading)' }}
+            <div className="h-fit sticky top-24 anim-fade-up anim-delay-3">
+              <div className="rounded-2xl overflow-hidden backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 shadow-2xl border border-slate-200/80 dark:border-slate-700/80">
+                <div
+                  className="px-6 py-5 bg-gradient-to-r from-orange-500 to-rose-500 text-white"
                 >
-                  <RefreshCcw size={16} style={{ color: 'var(--primary)' }} /> Post Swap Request
-                </h3>
-                <p className="text-[12px] mt-1" style={{ color: 'var(--text-secondary)' }}>
-                  For Train <strong style={{ color: 'var(--primary)' }}>{trainNumber}</strong>
-                </p>
-              </div>
+                  <h3
+                    className="font-extrabold text-[16px] uppercase flex items-center gap-2 tracking-wider"
+                  >
+                    <RefreshCcw size={18} /> Post Swap Request
+                  </h3>
+                  <p className="text-[13px] mt-1.5 opacity-90 font-medium">
+                    For Train <strong>{trainNumber}</strong>
+                  </p>
+                </div>
 
               <form className="p-6 space-y-5" onSubmit={handlePost}>
                 <div className="bp-input-wrapper">
