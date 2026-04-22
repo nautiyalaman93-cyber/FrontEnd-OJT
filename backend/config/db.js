@@ -5,43 +5,44 @@
  * HOW IT WORKS:
  * - We call this function once when the server starts.
  * - It reads the MONGO_URI from our .env file.
- * - If connection fails, the server logs the error and exits.
+ * - Retries once on failure before exiting.
+ * - Does NOT fall back to in-memory in production (data would be lost on restart).
  */
 
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-  try {
-    let uri = process.env.MONGO_URI;
+  let uri = process.env.MONGO_URI;
 
-    // If using the placeholder URI from .env.example, spin up an In-Memory Server
-    if (!uri || uri.includes('<username>') || uri.includes('cluster.mongodb.net/bharatpath')) {
-      console.log('⚠️ Placeholder MONGO_URI detected. Starting In-Memory MongoDB...');
-      const { MongoMemoryServer } = require('mongodb-memory-server');
-      const mongoServer = await MongoMemoryServer.create();
-      uri = mongoServer.getUri();
-      console.log(`✅ In-Memory MongoDB Started: ${uri}`);
-    }
+  // Dev/CI mode: If placeholder URI, spin up an In-Memory Server
+  if (!uri || uri.includes('<username>') || uri.includes('cluster.mongodb.net/bharatpath')) {
+    console.log('🔧 Placeholder MONGO_URI detected. Starting In-Memory MongoDB for local dev...');
+    const { MongoMemoryServer } = require('mongodb-memory-server');
+    const mongoServer = await MongoMemoryServer.create();
+    uri = mongoServer.getUri();
+    console.log(`🍃 In-Memory MongoDB Started: ${uri}`);
+  }
 
-    const conn = await mongoose.connect(uri, {
-      bufferCommands: false,
-      serverSelectionTimeoutMS: 5000,
-    });
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`❌ Primary MongoDB Connection Error: ${error.message}`);
-    
-    // Fallback to In-Memory MongoDB so the app doesn't crash
-    console.log('🔄 Falling back to In-Memory MongoDB to keep the app running...');
+  // Retry logic: try up to 2 times with a 3-second gap
+  for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const { MongoMemoryServer } = require('mongodb-memory-server');
-      const mongoServer = await MongoMemoryServer.create();
-      const fallbackUri = mongoServer.getUri();
-      await mongoose.connect(fallbackUri);
-      console.log(`✅ Success: Running on In-Memory MongoDB: ${fallbackUri}`);
-    } catch (fallbackError) {
-      console.error(`❌ Critical: Fallback DB also failed: ${fallbackError.message}`);
-      throw fallbackError;
+      const conn = await mongoose.connect(uri, {
+        bufferCommands: false,
+        serverSelectionTimeoutMS: 8000,
+      });
+      console.log(`🍃 MongoDB Connected: ${conn.connection.host}`);
+      return; // success — exit the function
+    } catch (error) {
+      console.error(`❌ MongoDB Connection attempt ${attempt} failed: ${error.message}`);
+      if (attempt === 1) {
+        console.log('⏳ Retrying in 3 seconds...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      } else {
+        // Both attempts failed — crash hard so Render logs it clearly
+        console.error('💥 Could not connect to MongoDB after 2 attempts. Exiting.');
+        console.error('👉 Fix: Go to MongoDB Atlas → Network Access → Add 0.0.0.0/0');
+        process.exit(1);
+      }
     }
   }
 };
