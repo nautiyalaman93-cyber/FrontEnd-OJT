@@ -80,7 +80,15 @@ const searchTrains = async (req, res) => {
     return res.json({ success: true, data: response.data.data });
   } catch (error) {
     console.error('Train Search API Error:', error.message);
-    return res.status(500).json({ message: 'Failed to fetch train data. Try again later.' });
+    // Fallback to mock data when real API fails (same pattern as getTrainStatus)
+    const mockTrains = [
+      { trainNumber: '12952', trainName: 'Mumbai Rajdhani Express', departure: '16:55', arrival: '08:35', duration: '15h 40m', availableClasses: ['1A', '2A', '3A'], runningDays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
+      { trainNumber: '12904', trainName: 'Golden Temple Mail', departure: '07:20', arrival: '05:05', duration: '21h 45m', availableClasses: ['SL', '3A', '2A'], runningDays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
+      { trainNumber: '12926', trainName: 'Paschim Express', departure: '16:35', arrival: '14:55', duration: '22h 20m', availableClasses: ['SL', '3A', '2A', '1A'], runningDays: ['Mon','Wed','Fri','Sun'] },
+      { trainNumber: '19019', trainName: 'Dehradun Express', departure: '21:30', arrival: '18:45', duration: '21h 15m', availableClasses: ['SL', '3A'], runningDays: ['Tue','Thu','Sat'] },
+      { trainNumber: '12138', trainName: 'Punjab Mail', departure: '19:45', arrival: '17:00', duration: '21h 15m', availableClasses: ['SL', '3A', '2A'], runningDays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
+    ];
+    return res.json({ success: true, data: mockTrains, isMock: true, note: 'Showing sample data — live API temporarily unavailable.' });
   }
 };
 
