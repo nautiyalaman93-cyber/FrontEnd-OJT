@@ -102,6 +102,11 @@ export default function SeatExchange() {
 
   const handleSendMessage = async () => {
     if (!selectedReq || !msgText.trim()) return;
+    if (!user) {
+      alert('You need to login first to send a message. Please click the Login button.');
+      setSelectedReq(null);
+      return;
+    }
     setIsSending(true);
     try {
       await seatService.sendMessage(selectedReq._id, msgText);
@@ -110,7 +115,11 @@ export default function SeatExchange() {
       alert('Message sent successfully! The passenger will see it in their inbox.');
     } catch (err) {
       console.error(err);
-      alert('Failed to send message.');
+      // Check if it's an auth error
+      const msg = err?.response?.status === 401 || err?.message?.includes('401')
+        ? 'Session expired. Please logout and login again.'
+        : 'Failed to send message. Please try again.';
+      alert(msg);
     } finally {
       setIsSending(false);
     }
