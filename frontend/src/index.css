@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 @theme {
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
@@ -75,10 +75,10 @@
   --bg-hover:       #1E2535;
   --bg-active:      #241B14;
 
-  --primary:        #EF4444;
-  --primary-hover:  #F87171;
+  --primary:        #F87171;
+  --primary-hover:  #FCA5A5;
   --primary-light:  #2A1A0A;
-  --primary-glow:   rgba(255, 140, 66, 0.20);
+  --primary-glow:   rgba(248, 113, 113, 0.20);
   --secondary:      #58A6FF;
   --secondary-light:#0D2137;
 
@@ -100,7 +100,7 @@
   --shadow-sm:      0 1px 3px rgba(0,0,0,0.30);
   --shadow-md:      0 4px 16px rgba(0,0,0,0.40);
   --shadow-lg:      0 12px 40px rgba(0,0,0,0.50);
-  --shadow-primary: 0 4px 20px rgba(255,140,66,0.22);
+  --shadow-primary: 0 4px 20px rgba(248,113,113,0.22);
 
   --nav-active-bg:  #EF4444;
   --nav-active-text:#0D1117;
@@ -788,8 +788,7 @@ header, footer, aside, main, nav {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 48px;
-  margin-bottom: 60px;
+  padding: 32px;
   box-shadow: var(--shadow-sm);
   animation: slideInDown 0.6s ease forwards;
 }
