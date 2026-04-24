@@ -9,7 +9,7 @@
  */
 
 const express = require('express');
-const { createRequest, getAllRequests, getMyRequests, deleteRequest, sendMessage, getMessages } = require('../controllers/seatController');
+const { createRequest, getAllRequests, getMyRequests, deleteRequest, sendMessage, getMessages, getMyConversations } = require('../controllers/seatController');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -19,6 +19,7 @@ router.get('/all', getAllRequests);
 
 // Protected routes
 router.get('/my-requests', protect, getMyRequests);
+router.get('/conversations', protect, getMyConversations);
 router.post('/request', protect, createRequest);
 router.delete('/:id', protect, deleteRequest);
 

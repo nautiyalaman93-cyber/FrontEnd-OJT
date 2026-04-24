@@ -12,6 +12,12 @@ import StationDropdown from '../../components/ui/StationDropdown';
 export default function ProximityAlerts() {
   const [activeAlertId, setActiveAlertId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [trainNumber, setTrainNumber] = useState('');
+  const [targetStation, setTargetStation] = useState('');
+  const [distance, setDistance] = useState(10);
+  const [isActive, setIsActive] = useState(false);
+  const [alertSet, setAlertSet] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   
   const { user } = useAuth();
 

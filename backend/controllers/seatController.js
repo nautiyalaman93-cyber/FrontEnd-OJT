@@ -76,6 +76,31 @@ const getMyRequests = async (req, res) => {
 };
 
 // -----------------------------------------------------------------------
+// @route   GET /api/seats/conversations
+// @desc    Get requests where the user has sent or received messages (excluding their own)
+// @access  Protected
+// -----------------------------------------------------------------------
+const getMyConversations = async (req, res) => {
+  try {
+    const messages = await Message.find({
+      $or: [{ sender: req.user._id }, { receiver: req.user._id }]
+    });
+    
+    const requestIds = [...new Set(messages.map(m => m.seatRequest.toString()))];
+    
+    const requests = await SeatRequest.find({
+      _id: { $in: requestIds },
+      user: { $ne: req.user._id } 
+    }).populate('user', 'name avatar').sort({ createdAt: -1 });
+
+    res.json({ success: true, data: requests });
+  } catch (error) {
+    console.error('Get My Conversations Error:', error.message);
+    res.status(500).json({ message: 'Failed to fetch conversations.' });
+  }
+};
+
+// -----------------------------------------------------------------------
 // @route   DELETE /api/seats/:id
 // @desc    Close/delete your own seat swap request
 // @access  Protected
@@ -171,4 +196,4 @@ const getMessages = async (req, res) => {
   }
 };
 
-module.exports = { createRequest, getAllRequests, getMyRequests, deleteRequest, sendMessage, getMessages };
+module.exports = { createRequest, getAllRequests, getMyRequests, deleteRequest, sendMessage, getMessages, getMyConversations };

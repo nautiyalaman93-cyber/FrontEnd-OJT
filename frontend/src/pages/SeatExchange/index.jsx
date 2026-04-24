@@ -30,6 +30,7 @@ export default function SeatExchange() {
 
   const [allRequests, setAllRequests] = useState([]);
   const [myRequests, setMyRequests] = useState([]);
+  const [myConversations, setMyConversations] = useState([]);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [expandedReq, setExpandedReq] = useState(null);
   const [reqMessages, setReqMessages] = useState({});
@@ -56,6 +57,7 @@ export default function SeatExchange() {
       setFetchLoading(false);
       setIsSearching(false);
       setHasSearched(true);
+      setActiveTab('feed');
     }
   };
 
@@ -69,8 +71,19 @@ export default function SeatExchange() {
     }
   };
 
+  const fetchMyConversations = async () => {
+    if (!user) return;
+    try {
+      const data = await seatService.getMyConversations();
+      setMyConversations(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'my') fetchMyRequests();
+    if (activeTab === 'conversations') fetchMyConversations();
   }, [activeTab, user]);
 
   const handlePost = async (e) => {
@@ -219,9 +232,8 @@ export default function SeatExchange() {
           </div>
         </section>
 
-        {/* ═══ Results Section (ONLY shown after search) ═══ */}
-        {hasSearched && (
-          <section className="results-section anim-fade-in">
+        {/* ═══ Results Section ═══ */}
+        <section className="results-section anim-fade-in">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               
               {/* ═══ Feed Column ═══ */}
@@ -241,10 +253,22 @@ export default function SeatExchange() {
                   >
                     My Postings
                   </button>
+                  <button 
+                    className={`search-tab ${activeTab === 'conversations' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('conversations')}
+                  >
+                    Conversations
+                  </button>
                 </div>
 
                 {activeTab === 'feed' ? (
-                  requests.length > 0 ? (
+                  !hasSearched ? (
+                    <div className="empty-state" style={{ textAlign: 'center', padding: '60px 20px', border: '1px dashed var(--border)', borderRadius: '16px', color: 'var(--text-muted)' }}>
+                      <Search size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+                      <h3 style={{ fontSize: '20px', color: 'var(--text-primary)', marginBottom: '8px' }}>Search for a Train</h3>
+                      <p>Enter a train number above to find open seat swap requests.</p>
+                    </div>
+                  ) : requests.length > 0 ? (
                     requests.map((req) => (
                       <div key={req._id} className="train-card bp-hover-lift">
                         <div className="train-header">
@@ -299,7 +323,7 @@ export default function SeatExchange() {
                       <p>No one has posted a seat swap request for Train {trainNumber} yet.</p>
                     </div>
                   )
-                ) : (
+                ) : activeTab === 'my' ? (
                   /* ═══ My Postings View ═══ */
                   myRequests.length > 0 ? (
                     myRequests.map((req) => (
@@ -383,6 +407,84 @@ export default function SeatExchange() {
                       <FileText size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
                       <h3 style={{ fontSize: '20px', color: 'var(--text-primary)', marginBottom: '8px' }}>No Postings Yet</h3>
                       <p>You haven't submitted any seat exchange requests.</p>
+                    </div>
+                  )
+                ) : (
+                  /* ═══ Conversations View ═══ */
+                  myConversations.length > 0 ? (
+                    myConversations.map((req) => (
+                      <div key={req._id} className="train-card bp-hover-lift" style={{ padding: '24px' }}>
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <span style={{ display: 'inline-block', background: 'var(--bg-active)', color: 'var(--primary)', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', marginBottom: '8px' }}>
+                              {req.status.toUpperCase()} • TRAIN {req.trainNumber}
+                            </span>
+                            <div className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+                              <strong style={{ color: 'var(--text-primary)' }}>{req.user?.name}</strong> is swapping <strong style={{ color: 'var(--text-primary)' }}>{req.currentSeat}</strong> for <strong style={{ color: 'var(--primary)' }}>{req.wantedSeat}</strong>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={() => setExpandedReq(expandedReq === req._id ? null : req._id)}
+                              className="bp-btn bp-btn--secondary flex items-center gap-2"
+                              style={{ padding: '8px 16px' }}
+                            >
+                              <MessageSquare size={16} /> 
+                              {reqMessages[req._id]?.length || 0}
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Messages Dropdown */}
+                        {expandedReq === req._id && (
+                          <div className="mt-4 pt-4 border-t border-[var(--border)]">
+                            {reqMessages[req._id]?.length > 0 ? (
+                              <div className="space-y-4">
+                                {reqMessages[req._id].map((m, mIdx) => (
+                                  <div key={mIdx} className={`flex flex-col ${m.sender._id === user._id ? 'items-end' : 'items-start'}`}>
+                                    <div 
+                                      style={{
+                                        background: m.sender._id === user._id ? 'rgba(255,107,0,0.1)' : 'var(--bg-input)',
+                                        border: `1px solid ${m.sender._id === user._id ? 'var(--primary-glow)' : 'var(--border)'}`,
+                                        padding: '12px 16px',
+                                        borderRadius: '12px',
+                                        maxWidth: '80%'
+                                      }}
+                                    >
+                                      <div className="flex justify-between items-start gap-4">
+                                        <div>
+                                          <p className="text-xs uppercase font-semibold opacity-60 mb-1" style={{ color: m.sender._id === user._id ? 'var(--primary)' : 'var(--text-secondary)' }}>{m.sender.name}</p>
+                                          <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{m.text}</p>
+                                        </div>
+                                        {m.sender._id !== user._id && (
+                                          <button 
+                                            onClick={() => setReplyTo({ userId: m.sender._id, userName: m.sender.name, requestId: req._id })}
+                                            className="text-[10px] font-bold uppercase tracking-wider text-primary hover:opacity-80 flex items-center gap-1"
+                                            style={{ color: 'var(--primary)', background: 'rgba(255,107,0,0.1)', padding: '4px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+                                          >
+                                            <Send size={10} /> Reply
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div style={{ textAlign: 'center', padding: '24px', opacity: 0.6 }}>
+                                <FileText size={32} style={{ margin: '0 auto 8px' }} />
+                                <p className="text-sm">No messages yet.</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="empty-state" style={{ textAlign: 'center', padding: '60px 20px', border: '1px dashed var(--border)', borderRadius: '16px', color: 'var(--text-muted)' }}>
+                      <FileText size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+                      <h3 style={{ fontSize: '20px', color: 'var(--text-primary)', marginBottom: '8px' }}>No Conversations</h3>
+                      <p>You haven't messaged anyone about a seat swap yet.</p>
                     </div>
                   )
                 )}
@@ -470,7 +572,6 @@ export default function SeatExchange() {
 
             </div>
           </section>
-        )}
 
       </div>
 

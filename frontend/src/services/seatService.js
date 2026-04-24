@@ -48,6 +48,20 @@ export const seatService = {
     }
   },
 
+  getMyConversations: async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/seats/conversations`, {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch conversations');
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      return [];
+    }
+  },
+
   submitRequest: async (data) => {
     try {
       const response = await fetch(`${BASE_URL}/api/seats/request`, {
