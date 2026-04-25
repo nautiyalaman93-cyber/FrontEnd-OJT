@@ -1,0 +1,67 @@
+========================================================================
+                      BHARATPATH PROJECT REQUIREMENTS
+========================================================================
+
+1. SYSTEM REQUIREMENTS
+----------------------
+- Node.js: v18.x or higher
+- npm: v9.x or higher
+- MongoDB: v6.x or higher (or MongoDB Atlas)
+- OS: Windows, macOS, or Linux
+
+2. EXTERNAL SERVICES & APIs
+---------------------------
+- Google Cloud Console: Required for Google OAuth 2.0 (Client ID & Secret)
+- RapidAPI: Required for Indian Railways Data (PNR, Live Status, Schedule)
+- Vercel/Render: Recommended for hosting frontend and backend.
+
+3. CORE PROJECT DEPENDENCIES
+----------------------------
+Frontend (React):
+- vite: Build tool
+- react-router-dom: Navigation
+- lucide-react: Iconography
+- framer-motion: UI Animations
+- axios: API communication
+- tailwindcss: Styling framework
+
+Backend (Node.js):
+- express: Web framework
+- mongoose: Database ODM
+- jsonwebtoken: Authentication
+- passport: Google OAuth strategy
+- cors: Security headers
+- dotenv: Environment management
+
+4. ENVIRONMENT CONFIGURATION (.env)
+-----------------------------------
+The following keys MUST be configured for the project to run:
+- PORT=5000
+- MONGO_URI=<your_mongodb_connection_string>
+- JWT_SECRET=<your_secure_random_string>
+- GOOGLE_CLIENT_ID=<your_google_id>
+- GOOGLE_CLIENT_SECRET=<your_google_secret>
+- RAPIDAPI_KEY=<your_rapid_api_key>
+- FRONTEND_URL=http://localhost:5173
+
+5. FUNCTIONAL REQUIREMENTS
+--------------------------
+- USER AUTH: Secure login via Google.
+- PNR STATUS: Real-time fetching of passenger booking data.
+- LIVE TRACKING: Map-based or list-based train location tracking.
+- SEAT EXCHANGE: A platform to post, view, and chat about seat swaps.
+- SOS SYSTEM: Instant emergency alerting with location context.
+- PROXIMITY ALARMS: Automatic notification before reaching a station.
+
+6. BROWSER COMPATIBILITY
+------------------------
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+- Mobile-responsive (Android/iOS)
+
+========================================================================
+Generated on: 2026-04-25
+Project: BharatPath - UI-OJT
+========================================================================
