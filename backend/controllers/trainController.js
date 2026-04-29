@@ -11,7 +11,7 @@
  * - GET /api/trains/search?from=NDLS&to=MMCT&date=20241225 → Search Trains
  */
 
-const { createRailwayAPI } = require('../services/apiService');
+const { fetchWithKeyRotation } = require('../services/apiService');
 const trainMock = require('../mock/trainMock.json');
 
 // -----------------------------------------------------------------------
@@ -26,22 +26,12 @@ const getTrainStatus = async (req, res) => {
     return res.status(400).json({ message: 'Train number is required.' });
   }
 
-  const apiKey = process.env.LIVE_STATUS_API_KEY;
-  const apiHost = process.env.LIVE_STATUS_API_HOST;
-
-  // Mock fallback if no API key
-  if (!apiKey || !apiHost) {
-    console.log('⚠️  No LIVE_STATUS_API_KEY or LIVE_STATUS_API_HOST. Using mock train status data.');
-    return res.json({ success: true, data: trainMock, isMock: true });
-  }
-
   try {
-    const railwayAPI = createRailwayAPI(apiHost, apiKey);
-    const response = await railwayAPI.get(`/api/v1/liveTrainStatus?trainNo=${number}&startDay=1`);
-    return res.json({ success: true, data: response.data.data });
+    const data = await fetchWithKeyRotation(`/api/v1/liveTrainStatus?trainNo=${number}&startDay=1`);
+    return res.json({ success: true, data: data.data });
   } catch (error) {
     console.error('Train Status API Error:', error.message);
-    return res.json({ success: true, data: trainMock, isMock: true, note: 'API failed, showing mock data.' });
+    return res.json({ success: true, data: trainMock, isMock: true, note: 'All API keys failed, showing mock data.' });
   }
 };
 
@@ -57,27 +47,9 @@ const searchTrains = async (req, res) => {
     return res.status(400).json({ message: 'Please provide from, to, and date query params.' });
   }
 
-  const apiKey = process.env.TRAIN_SEARCH_API_KEY;
-  const apiHost = process.env.TRAIN_SEARCH_API_HOST;
-
-  // Mock fallback
-  if (!apiKey || !apiHost) {
-    console.log('⚠️  No TRAIN_SEARCH_API_KEY or TRAIN_SEARCH_API_HOST. Using mock train search data.');
-    // Return a simplified mock train list
-    const mockTrains = [
-      { trainNumber: '12952', trainName: 'Mumbai Rajdhani', departure: '16:55', arrival: '08:35', duration: '15h 40m' },
-      { trainNumber: '12904', trainName: 'Golden Temple Mail', departure: '07:20', arrival: '05:05', duration: '21h 45m' },
-      { trainNumber: '12926', trainName: 'Paschim Express', departure: '16:35', arrival: '14:55', duration: '22h 20m' },
-    ];
-    return res.json({ success: true, data: mockTrains, isMock: true });
-  }
-
   try {
-    const railwayAPI = createRailwayAPI(apiHost, apiKey);
-    const response = await railwayAPI.get(
-      `/api/v3/trainBetweenStations?fromStationCode=${from}&toStationCode=${to}&dateOfJourney=${date}`
-    );
-    return res.json({ success: true, data: response.data.data });
+    const data = await fetchWithKeyRotation(`/api/v3/trainBetweenStations?fromStationCode=${from}&toStationCode=${to}&dateOfJourney=${date}`);
+    return res.json({ success: true, data: data.data });
   } catch (error) {
     console.error('Train Search API Error:', error.message);
     // Fallback to mock data when real API fails (same pattern as getTrainStatus)
@@ -104,26 +76,14 @@ const searchStations = async (req, res) => {
     return res.status(400).json({ message: 'Please provide a query.' });
   }
 
-  const apiKey = process.env.STATION_SEARCH_API_KEY;
-  const apiHost = process.env.STATION_SEARCH_API_HOST;
-
-  // Mock fallback
-  if (!apiKey || !apiHost) {
-    console.log('⚠️  No STATION_SEARCH_API_KEY or STATION_SEARCH_API_HOST. Using mock station search data.');
-    const stationMock = require('../mock/stationMock.json');
-    const matched = stationMock.filter(s => s.toLowerCase().includes(query.toLowerCase()));
-    return res.json({ success: true, data: matched, isMock: true });
-  }
-
   try {
-    const railwayAPI = createRailwayAPI(apiHost, apiKey);
-    const response = await railwayAPI.get(`/api/v1/searchStation?query=${query}`);
-    return res.json({ success: true, data: response.data.data });
+    const data = await fetchWithKeyRotation(`/api/v1/searchStation?query=${query}`);
+    return res.json({ success: true, data: data.data });
   } catch (error) {
     console.error('Station Search API Error:', error.message);
     const stationMock = require('../mock/stationMock.json');
     const matched = stationMock.filter(s => s.toLowerCase().includes(query.toLowerCase()));
-    return res.json({ success: true, data: matched, isMock: true, note: 'API failed, showing mock data.' });
+    return res.json({ success: true, data: matched, isMock: true, note: 'All API keys failed, showing mock data.' });
   }
 };
 

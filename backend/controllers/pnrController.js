@@ -10,7 +10,7 @@
  *    - If YES key → We call the real RapidAPI and return live data.
  */
 
-const { createRailwayAPI } = require('../services/apiService');
+const { fetchWithKeyRotation } = require('../services/apiService');
 const pnrMock = require('../mock/pnrMock.json');
 
 // -----------------------------------------------------------------------
@@ -26,24 +26,13 @@ const getPNRStatus = async (req, res) => {
     return res.status(400).json({ message: 'Please provide a valid 10-digit PNR number.' });
   }
 
-  const apiKey = process.env.PNR_API_KEY;
-  const apiHost = process.env.PNR_API_HOST;
-
-  // If no API key or host, use mock data
-  if (!apiKey || !apiHost) {
-    console.log('⚠️  No PNR_API_KEY or PNR_API_HOST found. Using mock PNR data.');
-    return res.json({ success: true, data: pnrMock, isMock: true });
-  }
-
-  // If API key exists, call RapidAPI
   try {
-    const railwayAPI = createRailwayAPI(apiHost, apiKey);
-    const response = await railwayAPI.get(`/api/v3/getPNRStatus?pnrNumber=${pnr}`);
-    return res.json({ success: true, data: response.data.data });
+    const data = await fetchWithKeyRotation(`/api/v3/getPNRStatus?pnrNumber=${pnr}`);
+    return res.json({ success: true, data: data.data });
   } catch (error) {
     console.error('PNR API Error:', error.message);
-    // Even if real API fails, fall back to mock so UI doesn't crash
-    return res.json({ success: true, data: pnrMock, isMock: true, note: 'API failed, showing mock data.' });
+    // Even if real API fails (or all keys are exhausted), fall back to mock so UI doesn't crash
+    return res.json({ success: true, data: pnrMock, isMock: true, note: 'All API keys failed, showing mock data.' });
   }
 };
 
