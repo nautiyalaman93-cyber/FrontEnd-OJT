@@ -17,14 +17,22 @@ export const api = {
       return api.stationCache[q];
     }
 
+    // For empty queries, check a special 'default' cache key
+    if (!q && api.stationCache['__default__']) {
+      return api.stationCache['__default__'];
+    }
+
     try {
-      const res = await fetch(`${BASE_URL}/api/trains/stations/search?query=${encodeURIComponent(query)}`);
+      const url = q
+        ? `${BASE_URL}/api/trains/stations/search?query=${encodeURIComponent(q)}`
+        : `${BASE_URL}/api/trains/stations/search`;
+      const res = await fetch(url);
       if (!res.ok) return [];
       const data = await res.json();
       const results = data.data || [];
       
       // Store in cache
-      api.stationCache[q] = results;
+      api.stationCache[q || '__default__'] = results;
       return results;
     } catch (e) {
       console.error(e);

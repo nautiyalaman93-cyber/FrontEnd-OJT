@@ -25,7 +25,7 @@ export default function StationDropdown({ label, value, onChange, placeholder = 
 
   useEffect(() => {
     const fetchStations = async () => {
-      const data = await api.searchStations(query || 'a');
+      const data = await api.searchStations(query);
       setStations(data);
     };
 

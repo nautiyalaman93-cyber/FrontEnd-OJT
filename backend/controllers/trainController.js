@@ -117,13 +117,25 @@ const searchTrains = async (req, res) => {
       console.log('⚠️ Live API Unavailable — Using smart mock fallback.');
     }
 
+    // Build contextual mock trains using the actual from/to from the search
+    // Look up full station names from the mock database
+    const stationMock = require('../mock/stationMock.json');
+    const findStationName = (code) => {
+      const match = stationMock.find(s => s.toUpperCase().endsWith(`| ${code.toUpperCase()}`));
+      if (match) return match.split(' | ')[0].split(' ').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
+      return code; // fallback to code if not found
+    };
+    const fromName = findStationName(from);
+    const toName = findStationName(to);
+
     const mockTrains = [
-      { train_number: '12951', train_name: 'Mumbai Central - New Delhi Rajdhani Express', from_std: '16:40', to_std: '08:22', duration: '15h 42m', running_days: 'Daily' },
-      { train_number: '12952', train_name: 'New Delhi - Mumbai Central Rajdhani Express', from_std: '16:55', to_std: '08:35', duration: '15h 40m', running_days: 'Daily' },
-      { train_number: '12260', train_name: 'New Delhi - Sealdah Duronto Express', from_std: '19:40', to_std: '12:45', duration: '17h 05m', running_days: 'Mon,Tue,Fri,Sat' },
-      { train_number: '12002', train_name: 'New Delhi - Rani Kamalapati Shatabdi Express', from_std: '06:00', to_std: '14:40', duration: '8h 40m', running_days: 'Daily' },
-      { train_number: '12424', train_name: 'New Delhi - Dibrugarh Rajdhani Express', from_std: '16:20', to_std: '07:00', duration: '38h 40m', running_days: 'Daily' },
+      { train_number: '12952', train_name: `${fromName} - ${toName} Rajdhani Express`, from_std: '16:55', to_std: '08:35', duration: '15h 40m', running_days: 'Daily' },
+      { train_number: '12260', train_name: `${fromName} - ${toName} Duronto Express`, from_std: '19:40', to_std: '12:45', duration: '17h 05m', running_days: 'Mon,Tue,Fri,Sat' },
+      { train_number: '12002', train_name: `${fromName} - ${toName} Shatabdi Express`, from_std: '06:00', to_std: '14:40', duration: '8h 40m', running_days: 'Daily' },
+      { train_number: '12424', train_name: `${fromName} - ${toName} Garib Rath Express`, from_std: '16:20', to_std: '07:00', duration: '14h 40m', running_days: 'Mon,Wed,Fri' },
+      { train_number: '12622', train_name: `${fromName} - ${toName} Superfast Express`, from_std: '21:05', to_std: '06:15', duration: '9h 10m', running_days: 'Daily' },
     ];
+    setCache(cacheKey, mockTrains);
     return res.json({ success: true, data: mockTrains, isMock: true, note: 'Showing local BharatPath data (Live API limits reached).' });
   }
 };
@@ -135,25 +147,36 @@ const searchTrains = async (req, res) => {
 // -----------------------------------------------------------------------
 const searchStations = async (req, res) => {
   const { query } = req.query;
+  const stationMock = require('../mock/stationMock.json');
 
-  if (!query) {
-    return res.status(400).json({ message: 'Please provide a query.' });
+  // If no query provided, return top 15 popular stations as default suggestions
+  if (!query || query.trim() === '') {
+    const topStations = stationMock.slice(0, 15);
+    return res.json({ success: true, data: topStations, isMock: true });
   }
 
   const cacheKey = `station_${query}`;
+  const cached = getCached(cacheKey);
+  if (cached) {
+    return res.json({ success: true, data: cached, fromCache: true });
+  }
+
   try {
     const data = await fetchWithKeyRotation(`/api/v1/searchStation?query=${query}`);
     const results = (data.data || []).slice(0, 20);
-    setCache(cacheKey, results, STATION_CACHE_TTL_MS); // Use long TTL for stations
-    // If API returns success but 0 results, trigger the same mock fallback
+    if (results.length > 0) {
+      setCache(cacheKey, results, STATION_CACHE_TTL_MS);
+      return res.json({ success: true, data: results });
+    }
+    // 0 results from API, fall through to mock
     throw new Error('No stations found in live API');
   } catch (error) {
     if (error.message.includes('429')) {
       console.log('📡 Station API Limit Reached — Using local station database.');
     }
-    const stationMock = require('../mock/stationMock.json');
     const matched = stationMock.filter(s => s.toLowerCase().includes(query.toLowerCase())).slice(0, 20);
-    return res.json({ success: true, data: matched, isMock: true, note: 'Using local BharatPath database.' });
+    setCache(cacheKey, matched, STATION_CACHE_TTL_MS);
+    return res.json({ success: true, data: matched, isMock: true });
   }
 };
 

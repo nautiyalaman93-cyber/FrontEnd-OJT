@@ -118,29 +118,38 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer" />
                   
                   {/* Robust mapping for different API structures */}
-                  <div className="flex flex-col gap-1 relative z-10">
-                    <h3 className="text-[18px] font-bold" style={{ color: 'var(--text-heading)' }}>
+                  <div className="flex-1 min-w-0 relative z-10">
+                    <h3 className="text-[17px] font-extrabold truncate" style={{ color: 'var(--text-heading)' }}>
                       {train.train_name || train.trainName || train.name || 'Unknown Train'}
                     </h3>
-                    <span className="text-[12px] font-mono opacity-60" style={{ color: 'var(--text-secondary)' }}>
-                      #{train.train_number || train.trainNumber || train.id || '-----'}
-                    </span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                        {train.train_number || train.trainNumber || train.id || '-----'}
+                      </span>
+                      <span className="text-[11px] font-medium opacity-50" style={{ color: 'var(--text-muted)' }}>
+                        {train.running_days || 'Daily'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-10">
-                    <div className="text-center">
-                      <div className="text-[20px] font-black" style={{ color: 'var(--text-heading)' }}>
+
+                  <div className="flex items-center gap-8 min-w-[240px] justify-center">
+                    <div className="text-center w-20">
+                      <div className="text-[18px] font-black tabular-nums" style={{ color: 'var(--text-heading)' }}>
                         {train.from_std || train.departure_time || train.departure || '--:--'}
                       </div>
-                      <div className="text-[10px] uppercase tracking-widest font-bold opacity-50" style={{ color: 'var(--text-muted)' }}>Departs</div>
+                      <div className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-40 mt-0.5" style={{ color: 'var(--text-muted)' }}>Departs</div>
                     </div>
-                    <div className="w-12 h-px bg-border relative">
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary" />
+                    
+                    <div className="flex-1 flex flex-col items-center gap-1 opacity-20">
+                       <div className="w-full h-[1px] bg-current" style={{ color: 'var(--text-muted)' }} />
+                       <div className="text-[8px] font-bold uppercase tracking-tighter">{train.duration || '--h --m'}</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-[20px] font-black" style={{ color: 'var(--text-heading)' }}>
+
+                    <div className="text-center w-20">
+                      <div className="text-[18px] font-black tabular-nums" style={{ color: 'var(--text-heading)' }}>
                         {train.to_std || train.arrival_time || train.arrival || '--:--'}
                       </div>
-                      <div className="text-[10px] uppercase tracking-widest font-bold opacity-50" style={{ color: 'var(--text-muted)' }}>Arrives</div>
+                      <div className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-40 mt-0.5" style={{ color: 'var(--text-muted)' }}>Arrives</div>
                     </div>
                   </div>
                   <button
