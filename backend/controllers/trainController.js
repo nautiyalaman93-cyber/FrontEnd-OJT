@@ -111,15 +111,20 @@ const searchTrains = async (req, res) => {
     // If API returns success but 0 results, trigger the same mock fallback
     throw new Error('No trains found in live API');
   } catch (error) {
-    console.error('Train Search API Error:', error.message);
+    if (error.message.includes('429')) {
+      console.log('📡 Live API Limit Reached — Switching to local BharatPath database.');
+    } else {
+      console.log('⚠️ Live API Unavailable — Using smart mock fallback.');
+    }
+
     const mockTrains = [
-      { trainNumber: '12952', trainName: 'Mumbai Rajdhani Express', departure: '16:55', arrival: '08:35', duration: '15h 40m', availableClasses: ['1A', '2A', '3A'], runningDays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
-      { trainNumber: '12002', trainName: 'New Delhi Shatabdi', departure: '06:00', arrival: '10:45', duration: '4h 45m', availableClasses: ['CC', 'EC'], runningDays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
-      { trainNumber: '12622', trainName: 'Tamil Nadu Express', departure: '21:05', arrival: '06:15', duration: '33h 10m', availableClasses: ['SL', '3A', '2A', '1A'], runningDays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
-      { trainNumber: '12050', trainName: 'Gatimaan Express', departure: '08:10', arrival: '09:50', duration: '1h 40m', availableClasses: ['CC', 'EC'], runningDays: ['Mon','Tue','Wed','Thu','Sat','Sun'] },
-      { trainNumber: '12434', trainName: 'Chennai Rajdhani', departure: '15:35', arrival: '20:45', duration: '29h 10m', availableClasses: ['1A', '2A', '3A'], runningDays: ['Wed','Fri'] },
+      { train_number: '12951', train_name: 'Mumbai Central - New Delhi Rajdhani Express', from_std: '16:40', to_std: '08:22', duration: '15h 42m', running_days: 'Daily' },
+      { train_number: '12952', train_name: 'New Delhi - Mumbai Central Rajdhani Express', from_std: '16:55', to_std: '08:35', duration: '15h 40m', running_days: 'Daily' },
+      { train_number: '12260', train_name: 'New Delhi - Sealdah Duronto Express', from_std: '19:40', to_std: '12:45', duration: '17h 05m', running_days: 'Mon,Tue,Fri,Sat' },
+      { train_number: '12002', train_name: 'New Delhi - Rani Kamalapati Shatabdi Express', from_std: '06:00', to_std: '14:40', duration: '8h 40m', running_days: 'Daily' },
+      { train_number: '12424', train_name: 'New Delhi - Dibrugarh Rajdhani Express', from_std: '16:20', to_std: '07:00', duration: '38h 40m', running_days: 'Daily' },
     ];
-    return res.json({ success: true, data: mockTrains, isMock: true, note: 'Showing sample data — live API returned 0 results or failed.' });
+    return res.json({ success: true, data: mockTrains, isMock: true, note: 'Showing local BharatPath data (Live API limits reached).' });
   }
 };
 
@@ -135,15 +140,20 @@ const searchStations = async (req, res) => {
     return res.status(400).json({ message: 'Please provide a query.' });
   }
 
+  const cacheKey = `station_${query}`;
   try {
     const data = await fetchWithKeyRotation(`/api/v1/searchStation?query=${query}`);
-    setCache(cacheKey, data.data, STATION_CACHE_TTL_MS); // Use long TTL for stations
-    return res.json({ success: true, data: data.data });
+    const results = (data.data || []).slice(0, 20);
+    setCache(cacheKey, results, STATION_CACHE_TTL_MS); // Use long TTL for stations
+    // If API returns success but 0 results, trigger the same mock fallback
+    throw new Error('No stations found in live API');
   } catch (error) {
-    console.error('Station Search API Error:', error.message);
+    if (error.message.includes('429')) {
+      console.log('📡 Station API Limit Reached — Using local station database.');
+    }
     const stationMock = require('../mock/stationMock.json');
-    const matched = stationMock.filter(s => s.toLowerCase().includes(query.toLowerCase()));
-    return res.json({ success: true, data: matched, isMock: true, note: 'All API keys failed, showing mock data.' });
+    const matched = stationMock.filter(s => s.toLowerCase().includes(query.toLowerCase())).slice(0, 20);
+    return res.json({ success: true, data: matched, isMock: true, note: 'Using local BharatPath database.' });
   }
 };
 

@@ -6,13 +6,26 @@
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export const api = {
-  // --- 1. Station Search ---
+  // Client-side cache for stations (in-memory)
+  stationCache: {},
+
   searchStations: async (query) => {
+    const q = (query || '').toLowerCase().trim();
+    
+    // Check client-side cache first (only for non-empty queries)
+    if (q && api.stationCache[q]) {
+      return api.stationCache[q];
+    }
+
     try {
       const res = await fetch(`${BASE_URL}/api/trains/stations/search?query=${encodeURIComponent(query)}`);
       if (!res.ok) return [];
       const data = await res.json();
-      return data.data || [];
+      const results = data.data || [];
+      
+      // Store in cache
+      api.stationCache[q] = results;
+      return results;
     } catch (e) {
       console.error(e);
       return [];

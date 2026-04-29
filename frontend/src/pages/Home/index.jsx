@@ -1,19 +1,21 @@
-/**
- * @file index.jsx (Home Page)
- * @description BharatPath — surgical precision, search-first layout. 
- * Human-crafted typography and layout. No fake numbers.
- */
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Train, 
+  MapPin, 
+  Search, 
+  Shield, 
+  Zap, 
+  Clock, 
+  ArrowRight,
+  Navigation,
+  Activity,
+  History,
+  MessageSquare
+} from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 import SearchBar from '../../components/ui/SearchBar';
 import { api } from '../../services/api';
-import { useTheme } from '../../context/ThemeContext';
-import {
-  Target, Map, Activity, ArrowRight, FileText,
-  Clock, Train, CheckCircle2, MapPin, Bell,
-  Shield, ChevronRight, Zap
-} from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -40,21 +42,20 @@ export default function Home() {
   };
 
   const features = [
-    { title: 'Live Telemetry', desc: 'Surgical accuracy for train locations and platform estimates.', icon: Activity, color: '#3B82F6', path: '/live-tracking', status: 'Operational' },
-    { title: 'PNR Intelligence', desc: 'Predict confirmation chances and track chart preparation.', icon: FileText, color: '#10B981', path: '/pnr-status', status: 'Instant' },
-    { title: 'Geo-Fencing', desc: 'Set smart alerts that trigger as you enter your destination radius.', icon: Target, color: 'var(--primary)', path: '/proximity-alerts', status: 'GPS-Synced' },
-    { title: 'Peer Exchange', desc: 'Direct seat swap negotiations with verified co-passengers.', icon: Map, color: '#8B5CF6', path: '/seat-exchange', status: 'Verified' },
+    { title: 'Seat Exchange', desc: 'P2P platform to swap your middle seat for a window or aisle with fellow travelers.', icon: ArrowRight, color: '#FF6B00', path: '/seat-exchange' },
+    { title: 'Live Tracking', desc: 'Millisecond-perfect GPS telemetry for every train in the Indian Railways network.', icon: Navigation, color: '#10B981', path: '/live-tracking' },
+    { title: 'Proximity Alerts', desc: 'Never miss your station. Get smart geofenced alerts as you approach your destination.', icon: Activity, color: '#3B82F6', path: '/proximity-alerts' },
+    { title: 'PNR Status', desc: 'Instant booking verification with AI-powered confirmation probability.', icon: History, color: '#8B5CF6', path: '/pnr-status' },
   ];
 
   return (
     <>
-      <div className="bp-bg-pattern" />
+      {/* ═══ AMBIENT BACKGROUND EFFECTS ═══ */}
       <div className="absolute top-0 left-0 w-full h-[600px] pointer-events-none overflow-hidden opacity-50">
-        <div className="bp-particle bp-particle--1" />
-        <div className="bp-particle bp-particle--2" />
-        <div className="bp-particle bp-particle--3" />
-        <div className="bp-particle bp-particle--4" />
-        <div className="bp-particle bp-particle--5" />
+        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[80%] rounded-full blur-[120px]" 
+          style={{ background: isDark ? 'rgba(255,107,0,0.08)' : 'rgba(255,107,0,0.05)' }} />
+        <div className="absolute bottom-0 left-[-10%] w-[50%] h-[70%] rounded-full blur-[100px]"
+          style={{ background: isDark ? 'rgba(59,130,246,0.06)' : 'rgba(59,130,246,0.03)' }} />
       </div>
 
       {/* ═══ COMPACT HERO — Surgical Layout ═══ */}
@@ -67,50 +68,19 @@ export default function Home() {
           borderBottom: `1px solid var(--border)`,
         }}
       >
-        {/* Refined ambient glow */}
-        <div
-          className="absolute top-[-10%] right-[10%] w-[500px] h-[500px] rounded-full pointer-events-none"
-          style={{
-            background: isDark ? 'rgba(255,122,0,0.03)' : 'rgba(217,81,0,0.04)',
-            filter: 'blur(100px)',
-          }}
-        />
-
-        <div className="max-w-[1100px] mx-auto px-6 pt-16 pb-0 relative z-10">
-
-          {/* System Status Label */}
-          <div className="flex items-center gap-3 mb-6">
-            <div
-              className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] px-3 py-1.5 rounded-md"
-              style={{ 
-                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', 
-                color: 'var(--text-secondary)',
-                border: '1px solid var(--border)'
-              }}
-            >
-              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#10B981' }} />
-              Network Live
+        <div className="max-w-[1100px] mx-auto px-6 pt-16 pb-20">
+          <div className="flex flex-col items-center text-center mb-12 anim-fade-up">
+            <div className="bp-section-label mb-4">
+              <Zap size={11} className="text-primary" /> Tomorrow's Railway Experience
             </div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4" style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}>
+              Bharat<span className="text-primary">Path</span>
+            </h1>
+            <p className="text-[15px] max-w-[600px] font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              A high-precision telemetry and social utility platform for the modern Indian traveler. 
+              Real-time tracking, seat swapping, and geofenced alerts in one premium interface.
+            </p>
           </div>
-
-          {/* Headline — High-end typography */}
-          <h1
-            className="text-[48px] md:text-[68px] font-extrabold leading-[0.95] mb-6 max-w-[800px] anim-slide-left"
-            style={{
-              color: 'var(--text-heading)',
-              letterSpacing: '-0.05em',
-            }}
-          >
-            Real-time <span className="bp-gradient-text">coordination</span> for the <span className="bp-glow-text" style={{ color: 'var(--primary)' }}>Indian traveler.</span>
-          </h1>
-
-          <p
-            className="text-[16px] md:text-[18px] max-w-[540px] mb-10 leading-relaxed font-medium"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            Surgical train tracking, PNR intelligence, and verified seat swaps. 
-            Engineered for precision, designed for humans.
-          </p>
 
           {/* Search bar — glass effect */}
           <div
@@ -126,7 +96,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ Main Content Area ═══ */}
+      {/* ═══ MAIN CONTENT AREA ═══ */}
       <section className="w-full max-w-[1100px] mx-auto px-6 pt-12 pb-24">
         
         {trainResults ? (
@@ -139,9 +109,16 @@ export default function Home() {
             </div>
             <div className="space-y-3">
               {trainResults.map((train, idx) => (
-                <div key={idx} className="bp-card p-5 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div
+                  key={idx}
+                  className="bp-card p-5 flex flex-col md:flex-row items-center justify-between gap-6 hover-lift group relative overflow-hidden anim-fade-up"
+                  style={{ animationDelay: `${idx * 0.1}s` }}
+                >
+                  {/* Premium Glass Shine Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer" />
+                  
                   {/* Robust mapping for different API structures */}
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 relative z-10">
                     <h3 className="text-[18px] font-bold" style={{ color: 'var(--text-heading)' }}>
                       {train.train_name || train.trainName || train.name || 'Unknown Train'}
                     </h3>
@@ -166,8 +143,12 @@ export default function Home() {
                       <div className="text-[10px] uppercase tracking-widest font-bold opacity-50" style={{ color: 'var(--text-muted)' }}>Arrives</div>
                     </div>
                   </div>
-                  <button onClick={() => navigate('/live-tracking')} className="bp-btn bp-btn--primary px-6 py-2.5 rounded-lg text-[13px] font-bold">
-                    Live Status
+                  <button
+                    onClick={() => navigate('/live-tracking')}
+                    className="bp-btn bp-btn--primary px-6 py-2.5 rounded-lg text-[13px] font-bold relative z-10 overflow-hidden group/btn"
+                  >
+                    <span className="relative z-10">Live Status</span>
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
                   </button>
                 </div>
               ))}
@@ -188,13 +169,7 @@ export default function Home() {
                       className="w-12 h-12 rounded-xl flex items-center justify-center"
                       style={{ background: `${f.color}08`, border: `1px solid ${f.color}20` }}
                     >
-                      <Icon size={22} color={f.color} />
-                    </div>
-                    <div 
-                      className="text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 rounded border"
-                      style={{ color: f.color, borderColor: `${f.color}40`, background: `${f.color}08` }}
-                    >
-                      {f.status}
+                      <Icon size={24} style={{ color: f.color }} />
                     </div>
                   </div>
                   <h3 className="text-[18px] font-bold mb-2">{f.title}</h3>

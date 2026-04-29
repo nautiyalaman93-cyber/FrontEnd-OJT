@@ -30,10 +30,16 @@ export default function StationDropdown({ label, value, onChange, placeholder = 
     };
 
     if (isOpen) {
-      const timer = setTimeout(() => {
+      if (!query) {
+        // Fetch immediately for empty query to show recommendations
         fetchStations();
-      }, 350); // Debounce delay
-      return () => clearTimeout(timer);
+      } else {
+        // Debounce for active typing
+        const timer = setTimeout(() => {
+          fetchStations();
+        }, 350);
+        return () => clearTimeout(timer);
+      }
     }
   }, [query, isOpen]);
 
