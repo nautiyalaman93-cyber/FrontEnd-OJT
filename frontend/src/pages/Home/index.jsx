@@ -1,6 +1,7 @@
 /**
  * @file index.jsx (Home Page)
- * @description BharatPath home — theme-aware hero, stats row, animated feature cards.
+ * @description BharatPath — compact, search-first layout. Inspired by Ixigo/Cleartrip.
+ * NO massive centered hero. Search is the star. Human-feeling layout.
  */
 
 import { useState } from 'react';
@@ -9,63 +10,10 @@ import SearchBar from '../../components/ui/SearchBar';
 import { api } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
 import {
-  Target, Map, Activity, Clock, ArrowRight, FileText,
-  Zap, Users, Star, TrendingUp, Train, CheckCircle2,
+  Target, Map, Activity, ArrowRight, FileText,
+  Clock, Train, CheckCircle2, MapPin, Bell,
+  TrendingUp, Users, Shield, ChevronRight,
 } from 'lucide-react';
-
-const stats = [
-  { icon: TrendingUp, label: 'PNR Checks', value: '1.2M+' },
-  { icon: Train,      label: 'Trains Tracked', value: '8,000+' },
-  { icon: Users,      label: 'Active Users', value: '45K' },
-  { icon: Star,       label: 'App Rating', value: '4.8 ★' },
-];
-
-const features = [
-  {
-    title: 'Live Train Status',
-    desc: 'Get exact location, platform info, and delay estimates in real time.',
-    icon: Activity,
-    badge: 'Live',
-    badgeColor: '#22C55E',
-    badgeBg: 'rgba(34,197,94,0.10)',
-    iconColor: '#3B82F6',
-    iconBg: 'rgba(59,130,246,0.10)',
-    path: '/live-tracking',
-  },
-  {
-    title: 'PNR Status Insight',
-    desc: 'Confirm booking status, track waitlist movement, and chart preparation.',
-    icon: FileText,
-    badge: 'Instant',
-    badgeColor: '#10B981',
-    badgeBg: 'rgba(16,185,129,0.10)',
-    iconColor: '#10B981',
-    iconBg: 'rgba(16,185,129,0.10)',
-    path: '/pnr-status',
-  },
-  {
-    title: 'GPS Proximity Alarm',
-    desc: 'Sleep without worry. Wake up automatically as you approach your station.',
-    icon: Target,
-    badge: 'Smart',
-    badgeColor: '#E05A00',
-    badgeBg: 'rgba(224,90,0,0.10)',
-    iconColor: '#E05A00',
-    iconBg: 'rgba(224,90,0,0.10)',
-    path: '/proximity-alerts',
-  },
-  {
-    title: 'Seat Swap Exchange',
-    desc: 'Find co-passengers willing to swap. No middlemen, no hassle.',
-    icon: Map,
-    badge: 'P2P',
-    badgeColor: '#8B5CF6',
-    badgeBg: 'rgba(139,92,246,0.10)',
-    iconColor: '#8B5CF6',
-    iconBg: 'rgba(139,92,246,0.10)',
-    path: '/seat-exchange',
-  },
-];
 
 export default function Home() {
   const navigate = useNavigate();
@@ -80,264 +28,245 @@ export default function Home() {
     try {
       const results = await api.searchTrains(query.fromStation, query.toStation, query.journeyDate);
       setTrainResults(results);
-    } catch (error) {
-      console.error('Failed to fetch trains:', error);
+    } catch (err) {
+      console.error(err);
     } finally {
       setIsSearching(false);
     }
   };
 
+  const features = [
+    { title: 'Live Train Status', desc: 'Real-time location, delay alerts, and platform info.', icon: Activity, color: '#3B82F6', path: '/live-tracking', stat: 'Updated every 30s' },
+    { title: 'PNR Status', desc: 'Booking confirmation, chart status, and waitlist tracking.', icon: FileText, color: '#10B981', path: '/pnr-status', stat: 'Instant results' },
+    { title: 'Proximity Alarm', desc: 'Auto wake-up as you approach your destination station.', icon: Target, color: 'var(--primary)', path: '/proximity-alerts', stat: 'GPS-based' },
+    { title: 'Seat Exchange', desc: 'Swap berths with co-passengers. Verified via PNR & location.', icon: Map, color: '#8B5CF6', path: '/seat-exchange', stat: 'P2P verified' },
+  ];
+
   return (
-    <div className="w-full pb-20 min-h-screen" style={{ background: 'var(--bg-page)' }}>
+    <div className="w-full min-h-screen" style={{ background: 'var(--bg-page)' }}>
 
-      {/* ═══ Hero Section — Theme Aware ═══ */}
+      {/* ═══ COMPACT HERO — Search First ═══ */}
       <section
-        className="w-full text-center pt-20 pb-48 relative overflow-hidden bp-particles bp-hero-dark"
+        className="w-full relative"
+        style={{
+          background: isDark
+            ? 'linear-gradient(160deg, #1a0e04 0%, #0a0907 60%)'
+            : 'linear-gradient(160deg, #FFF8F2 0%, #FFF0E4 40%, #F5EFE8 100%)',
+          borderBottom: `1px solid ${isDark ? 'rgba(255,140,66,0.10)' : 'rgba(224,90,0,0.12)'}`,
+        }}
       >
-        {/* Ambient glow — dark mode only */}
-        {isDark && <>
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[150%] rounded-full blur-[120px] pointer-events-none" style={{ background: 'rgba(255,140,66,0.05)' }} />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[150%] rounded-full blur-[100px] pointer-events-none" style={{ background: 'rgba(59,130,246,0.06)' }} />
-        </>}
+        {/* Subtle glow blob */}
+        <div
+          className="absolute top-0 right-[15%] w-[400px] h-[300px] rounded-full pointer-events-none"
+          style={{
+            background: isDark ? 'rgba(255,140,66,0.04)' : 'rgba(224,90,0,0.06)',
+            filter: 'blur(80px)',
+          }}
+        />
 
-        {/* Light mode ambient */}
-        {!isDark && (
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[60%] rounded-full blur-[100px] pointer-events-none" style={{ background: 'rgba(224,90,0,0.07)' }} />
-        )}
+        <div className="max-w-[1100px] mx-auto px-5 pt-10 pb-0 relative z-10">
 
-        {/* Floating particles */}
-        <div className="bp-particle bp-particle--1" />
-        <div className="bp-particle bp-particle--2" />
-        <div className="bp-particle bp-particle--3" />
-
-        <div className="relative z-10 max-w-3xl mx-auto px-4 mt-4">
-          {/* Badge */}
-          <div className="anim-fade-up">
+          {/* Top label */}
+          <div className="flex items-center gap-2 mb-4">
             <div
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-7 text-[12px] font-bold tracking-widest uppercase"
-              style={isDark ? {
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                color: 'rgba(255,255,255,0.70)',
-                backdropFilter: 'blur(8px)',
-              } : {
-                background: 'rgba(224,90,0,0.08)',
-                border: '1px solid rgba(224,90,0,0.20)',
-                color: 'var(--primary)',
-              }}
+              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.1em] px-3 py-1 rounded-full"
+              style={{ background: isDark ? 'rgba(255,140,66,0.10)' : 'rgba(224,90,0,0.08)', color: 'var(--primary)', border: '1px solid rgba(224,90,0,0.20)' }}
             >
-              <Zap size={12} />
-              Intelligent Railway Dashboard
+              <Train size={11} />
+              Indian Railways Tracker
             </div>
           </div>
 
-          {/* Main heading */}
+          {/* Headline — left aligned, natural size, NOT all caps */}
           <h1
-            className="text-5xl md:text-[64px] font-extrabold mb-5 tracking-tight leading-[1.05] anim-fade-up anim-delay-1"
+            className="text-[36px] md:text-[44px] font-extrabold leading-[1.15] mb-3 max-w-[580px]"
             style={{
               fontFamily: "'Poppins', sans-serif",
-              background: isDark
-                ? 'linear-gradient(135deg, #FFFFFF 0%, #FF8C42 40%, #58A6FF 70%, #FFFFFF 100%)'
-                : 'linear-gradient(135deg, #0F0D0B 0%, #E05A00 45%, #1E3A8A 100%)',
-              backgroundSize: '300% 300%',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              animation: 'gradient-shift 5s ease infinite',
+              color: isDark ? '#F0E8DF' : '#0F0D0B',
+              letterSpacing: '-0.5px',
             }}
           >
-            BHARAT·PATH
+            Track trains, check PNR,
+            <br />
+            <span style={{ color: 'var(--primary)' }}>swap seats</span> — instantly.
           </h1>
 
           <p
-            className="text-[16px] md:text-[18px] font-medium max-w-xl mx-auto leading-relaxed anim-fade-up anim-delay-2"
-            style={{ color: isDark ? 'rgba(232,221,212,0.70)' : 'var(--text-secondary)' }}
+            className="text-[15px] max-w-[480px] mb-6 leading-relaxed"
+            style={{ color: isDark ? 'rgba(232,221,212,0.60)' : 'var(--text-secondary)' }}
           >
-            Real-time IRCTC insights, live train telematics, and peer seat swaps — all in one dashboard.
+            The only railway dashboard you'll ever need. Live status, PNR checks, GPS alarms, and P2P seat swaps in one place.
           </p>
 
-          {/* CTA buttons */}
-          <div className="flex items-center justify-center gap-3 mt-8 anim-fade-up anim-delay-3">
-            <button
-              onClick={() => navigate('/pnr-status')}
-              className="bp-btn bp-btn--primary"
-              style={{ padding: '12px 28px', fontSize: '14px', borderRadius: '12px' }}
-            >
-              Check PNR Status
-            </button>
-            <button
-              onClick={() => navigate('/live-tracking')}
-              className="bp-btn bp-btn--secondary"
-              style={{ padding: '12px 28px', fontSize: '14px', borderRadius: '12px' }}
-            >
-              Live Tracking →
-            </button>
+          {/* Inline quick links */}
+          <div className="flex items-center gap-4 mb-8 flex-wrap">
+            {[
+              { label: 'PNR Status', path: '/pnr-status', icon: FileText },
+              { label: 'Live Tracking', path: '/live-tracking', icon: MapPin },
+              { label: 'Proximity Alarm', path: '/proximity-alerts', icon: Bell },
+            ].map((l) => {
+              const Icon = l.icon;
+              return (
+                <button
+                  key={l.path}
+                  onClick={() => navigate(l.path)}
+                  className="flex items-center gap-1.5 text-[13px] font-semibold transition-all duration-200 hover:opacity-80"
+                  style={{ color: isDark ? 'rgba(232,221,212,0.70)' : 'var(--text-secondary)' }}
+                >
+                  <Icon size={13} style={{ color: 'var(--primary)' }} />
+                  {l.label}
+                  <ChevronRight size={12} />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Search bar — flush with hero bottom */}
+          <div
+            className="rounded-t-2xl overflow-visible"
+            style={{
+              background: 'var(--bg-surface)',
+              boxShadow: isDark
+                ? '0 -4px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,140,66,0.08)'
+                : '0 -4px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(224,90,0,0.06)',
+            }}
+          >
+            <SearchBar onSearch={handleSearch} isSearching={isSearching} />
           </div>
         </div>
       </section>
 
-      {/* ═══ Stats Row ═══ */}
-      <section className="w-full max-w-[1050px] mx-auto px-4 -mt-6 relative z-20 anim-fade-up anim-delay-2">
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-          {stats.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div key={i} className="bp-stat-chip">
-                <Icon size={15} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-                <strong>{s.value}</strong>
-                <span>{s.label}</span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ═══ Search Bar ═══ */}
-      <section className="w-full max-w-[1050px] mx-auto px-4 relative z-20 anim-fade-up anim-delay-3" style={{ marginTop: '-12px' }}>
-        <div
-          className="rounded-2xl"
-          style={{
-            background: 'var(--bg-surface)',
-            boxShadow: isDark
-              ? '0 0 0 1px rgba(255,140,66,0.12), 0 16px 64px rgba(0,0,0,0.5)'
-              : '0 8px 40px rgba(0,0,0,0.10), 0 0 0 1px rgba(224,90,0,0.08)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          <SearchBar onSearch={handleSearch} isSearching={isSearching} />
-        </div>
-      </section>
-
-      {/* ═══ Results OR Feature Cards ═══ */}
-      {trainResults ? (
-        <section className="w-full max-w-[1050px] mx-auto mt-10 px-4 anim-fade-up">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <span className="bp-section-label">
-                <CheckCircle2 size={12} />
-                Results
-              </span>
-              <h2
-                className="text-[20px] font-extrabold"
-                style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}
-              >
-                {trainResults.length} trains found
-              </h2>
-            </div>
+      {/* ═══ Results Section ═══ */}
+      {trainResults && (
+        <section className="w-full max-w-[1100px] mx-auto px-5 pt-8 pb-6">
+          <div className="flex items-center gap-3 mb-5">
+            <span className="bp-section-label"><CheckCircle2 size={11} /> Search Results</span>
+            <span className="text-[16px] font-bold" style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}>
+              {trainResults.length} trains found
+            </span>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {trainResults.map((train, idx) => (
-              <div key={idx} className={`bp-card overflow-hidden relative group anim-fade-up anim-delay-${idx + 1}`}>
-                {/* Left accent bar */}
-                <div
-                  className="absolute left-0 top-0 bottom-0 w-[3px]"
-                  style={{ background: 'linear-gradient(180deg, var(--primary), transparent)' }}
-                />
+              <div key={idx} className={`bp-card overflow-hidden relative group anim-fade-up anim-delay-${Math.min(idx+1,6)}`}>
+                <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: 'linear-gradient(180deg, var(--primary), transparent)' }} />
 
-                <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border-light)', background: 'var(--bg-surface-2)' }}>
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-[16px] font-extrabold uppercase tracking-wide flex items-center gap-2" style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}>
-                      {train.name || train.trainName}
-                      <span className="text-[12px] font-bold border px-2 py-0.5 rounded" style={{ color: 'var(--text-muted)', borderColor: 'var(--border)', background: 'var(--bg-card)', fontFamily: "'Inter', monospace" }}>
-                        #{train.id || train.trainNumber}
-                      </span>
-                    </h3>
-                    {train.type && (
-                      <span className="text-[11px] font-bold border px-2.5 py-0.5 rounded uppercase tracking-wider" style={{ background: 'var(--secondary-light)', color: '#1E88E5', borderColor: 'rgba(30,136,229,0.30)' }}>
-                        {train.type}
-                      </span>
-                    )}
-                  </div>
+                <div className="px-5 py-3 border-b flex items-center gap-3" style={{ borderColor: 'var(--border-light)', background: 'var(--bg-surface-2)' }}>
+                  <span className="text-[15px] font-extrabold" style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}>
+                    {train.name || train.trainName}
+                  </span>
+                  <span className="text-[12px] font-mono font-bold px-2 py-0.5 rounded" style={{ color: 'var(--text-muted)', background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+                    #{train.id || train.trainNumber}
+                  </span>
                 </div>
 
-                <div className="px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="px-5 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-8">
-                    <div className="text-center">
-                      <p className="text-2xl font-extrabold tracking-tight" style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}>{train.departure}</p>
-                      <p className="text-[11px] font-bold uppercase tracking-wider mt-1" style={{ color: 'var(--text-muted)' }}>Departure</p>
+                    <div>
+                      <p className="text-[22px] font-extrabold" style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}>{train.departure}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider mt-0.5" style={{ color: 'var(--text-muted)' }}>Departs</p>
                     </div>
-                    <div className="flex flex-col items-center w-[100px]">
-                      <p className="text-[11px] font-semibold mb-2 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                    <div className="flex flex-col items-center gap-1">
+                      <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
                         <Clock size={10} /> {train.duration}
                       </p>
-                      <div className="w-full h-[2px] relative" style={{ background: 'var(--border)' }}>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full" style={{ background: 'var(--primary)', boxShadow: '0 0 6px var(--primary-glow)' }} />
+                      <div className="w-[80px] h-[1px] relative" style={{ background: 'var(--border)' }}>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--primary)', boxShadow: '0 0 4px var(--primary-glow)' }} />
                       </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-extrabold tracking-tight" style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}>{train.arrival}</p>
-                      <p className="text-[11px] font-bold uppercase tracking-wider mt-1" style={{ color: 'var(--text-muted)' }}>Arrival</p>
+                    <div>
+                      <p className="text-[22px] font-extrabold" style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}>{train.arrival}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider mt-0.5" style={{ color: 'var(--text-muted)' }}>Arrives</p>
                     </div>
                   </div>
                   <button
-                    className="bp-btn bp-btn--primary"
-                    style={{ padding: '10px 24px', fontSize: '13px', borderRadius: '10px' }}
+                    className="bp-btn bp-btn--primary text-[13px] font-bold"
+                    style={{ padding: '9px 22px', borderRadius: '10px' }}
                     onClick={() => navigate('/live-tracking')}
                   >
-                    Track Live <ArrowRight size={14} />
+                    Track Live <ArrowRight size={13} />
                   </button>
                 </div>
               </div>
             ))}
           </div>
         </section>
-      ) : (
-        <section className="w-full max-w-[1050px] mx-auto mt-16 px-4 pb-8">
-          <div className="flex items-center gap-3 mb-10 anim-fade-up">
-            <span className="bp-section-label">Features</span>
-            <h2 className="text-[22px] font-extrabold tracking-wide" style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}>
-              Everything you need on your journey
+      )}
+
+      {/* ═══ Feature Cards ═══ */}
+      {!trainResults && (
+        <section className="w-full max-w-[1100px] mx-auto px-5 pt-10 pb-16">
+
+          {/* Trust strip */}
+          <div className="flex items-center gap-6 flex-wrap mb-10 pb-8" style={{ borderBottom: '1px solid var(--border-light)' }}>
+            {[
+              { icon: TrendingUp, label: '1.2M+ PNR checks done' },
+              { icon: Train,      label: 'Covers 8,000+ trains' },
+              { icon: Users,      label: '45K+ active travelers' },
+              { icon: Shield,     label: 'PNR & GPS verified swaps' },
+            ].map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <div key={i} className="flex items-center gap-2 text-[13px] font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  <Icon size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                  {s.label}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Section header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2
+              className="text-[20px] font-bold"
+              style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}
+            >
+              What you can do with BharatPath
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {features.map((feature, idx) => {
-              const Icon = feature.icon;
+          {/* 2-column grid (feels more human than 4 equal columns) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {features.map((f, idx) => {
+              const Icon = f.icon;
               return (
                 <div
                   key={idx}
-                  onClick={() => navigate(feature.path)}
-                  className={`bp-card p-6 cursor-pointer group flex flex-col h-full relative overflow-hidden anim-fade-up anim-delay-${idx + 1}`}
+                  onClick={() => navigate(f.path)}
+                  className={`bp-card cursor-pointer group flex items-start gap-4 p-5 anim-fade-up anim-delay-${idx + 1}`}
+                  style={{ overflow: 'visible' }}
                 >
-                  {/* Hover gradient sweep */}
                   <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{ background: `radial-gradient(circle at top right, ${feature.iconBg}, transparent 65%)` }}
-                  />
-
-                  {/* Badge */}
-                  <div className="flex items-center justify-between mb-5 relative z-10">
-                    <div
-                      className="bp-icon-box w-11 h-11 anim-breathe"
-                      style={{ background: feature.iconBg, border: '1px solid var(--border-light)', animationDelay: `${idx * 0.4}s` }}
-                    >
-                      <Icon size={20} color={feature.iconColor} />
+                    className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center mt-0.5"
+                    style={{ background: `${f.color}14`, border: `1px solid ${f.color}28` }}
+                  >
+                    <Icon size={18} color={f.color} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h3
+                        className="text-[15px] font-bold"
+                        style={{ color: 'var(--text-heading)', fontFamily: "'Inter', sans-serif" }}
+                      >
+                        {f.title}
+                      </h3>
+                      <span
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+                        style={{ background: `${f.color}14`, color: f.color, border: `1px solid ${f.color}30` }}
+                      >
+                        {f.stat}
+                      </span>
                     </div>
+                    <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                      {f.desc}
+                    </p>
                     <span
-                      className="text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider"
-                      style={{ background: feature.badgeBg, color: feature.badgeColor, border: `1px solid ${feature.badgeColor}33` }}
+                      className="inline-flex items-center gap-1 text-[12px] font-semibold mt-3 group-hover:gap-2 transition-all duration-200"
+                      style={{ color: f.color }}
                     >
-                      {feature.badge}
+                      Open <ArrowRight size={12} />
                     </span>
                   </div>
-
-                  <h3
-                    className="text-[15px] font-bold mb-2 leading-snug relative z-10"
-                    style={{ color: 'var(--text-heading)', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}
-                  >
-                    {feature.title}
-                  </h3>
-                  <p className="text-[13px] leading-relaxed mb-5 flex-1 relative z-10" style={{ color: 'var(--text-secondary)' }}>
-                    {feature.desc}
-                  </p>
-
-                  <span
-                    className="text-[12px] font-bold mt-auto uppercase tracking-widest relative z-10 flex items-center gap-1.5 group-hover:gap-3 transition-all duration-300"
-                    style={{ color: feature.iconColor }}
-                  >
-                    Explore <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
                 </div>
               );
             })}
