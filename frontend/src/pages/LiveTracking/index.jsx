@@ -19,9 +19,14 @@ export default function LiveTracking() {
     setIsSearching(true);
     setError(null);
     try {
-      // API expects YYYYMMDD
-      const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-      const data = await api.getTrainStatus(trainNumber, today);
+      // Fix: Use local date formatting to avoid timezone shift
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}${month}${day}`;
+      
+      const data = await api.getTrainStatus(trainNumber, dateStr);
       if (data) {
         setTrainData(data);
         setHasSearched(true);
@@ -165,18 +170,18 @@ export default function LiveTracking() {
                           className="font-semibold text-[14px]"
                           style={{ color: isCurrent ? 'var(--primary)' : 'var(--text-primary)' }}
                         >
-                          {station.stationName} ({station.stationCode})
+                          {station.station_name || station.stationName || station.name} ({station.station_code || station.stationCode || station.code})
                         </p>
                         <p className="text-[11px] font-semibold uppercase tracking-wide mt-0.5" style={{ color: 'var(--text-muted)' }}>
                           {station.status === 'departed' ? 'Departed' : station.status === 'current' ? 'At Station' : 'Upcoming'}
-                          {station.delay > 0 && <span className="ml-2" style={{ color: '#D97706' }}>({station.delay}m delay)</span>}
+                          {(station.delay || station.latemin || 0) > 0 && <span className="ml-2" style={{ color: '#D97706' }}>({station.delay || station.latemin}m delay)</span>}
                         </p>
                       </div>
                       <p
                         className="text-[14px] font-bold"
                         style={{ color: isCurrent ? 'var(--primary)' : 'var(--text-secondary)' }}
                       >
-                        {station.actualArrival || station.scheduledArrival}
+                        {station.actual_arrival || station.actualArrival || station.scheduled_arrival || station.scheduledArrival || '--:--'}
                       </p>
                     </div>
                   </div>
@@ -190,10 +195,10 @@ export default function LiveTracking() {
             {/* Train info */}
             <div className="bp-card p-5 text-center anim-scale-in anim-delay-1">
               <p className="text-[11px] font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>
-                {trainData.trainNumber} {trainData.trainName}
+                {trainData.train_number || trainData.trainNumber} {trainData.train_name || trainData.trainName}
               </p>
               <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}>
-                {trainData.currentStationName || 'Tracking...'}
+                {trainData.current_station_name || trainData.currentStationName || 'Tracking...'}
               </h3>
 
               <div className="grid grid-cols-2 gap-3 text-left">

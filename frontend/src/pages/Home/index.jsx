@@ -20,7 +20,10 @@ export default function Home() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [isSearching, setIsSearching] = useState(false);
-  const [trainResults, setTrainResults] = useState(null);
+  const [trainResults, setTrainResults] = useState(() => {
+    const saved = sessionStorage.getItem('lastTrainSearch');
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const handleSearch = async (query) => {
     setIsSearching(true);
@@ -28,6 +31,7 @@ export default function Home() {
     try {
       const results = await api.searchTrains(query.fromStation, query.toStation, query.journeyDate);
       setTrainResults(results);
+      sessionStorage.setItem('lastTrainSearch', JSON.stringify(results));
     } catch (err) {
       console.error(err);
     } finally {
@@ -55,7 +59,7 @@ export default function Home() {
 
       {/* ═══ COMPACT HERO — Surgical Layout ═══ */}
       <section
-        className="w-full relative overflow-hidden"
+        className="w-full relative overflow-visible z-[60]"
         style={{
           background: isDark
             ? 'linear-gradient(160deg, #0a0a0a 0%, #050505 100%)'
@@ -114,6 +118,7 @@ export default function Home() {
             style={{
               borderBottom: 'none',
               boxShadow: 'var(--shadow-lg)',
+              zIndex: 50, // Higher than any subsequent content
             }}
           >
             <SearchBar onSearch={handleSearch} isSearching={isSearching} />
@@ -135,21 +140,30 @@ export default function Home() {
             <div className="space-y-3">
               {trainResults.map((train, idx) => (
                 <div key={idx} className="bp-card p-5 flex flex-col md:flex-row items-center justify-between gap-6">
+                  {/* Robust mapping for different API structures */}
                   <div className="flex flex-col gap-1">
-                    <h3 className="text-[18px] font-bold">{train.name || train.trainName}</h3>
-                    <span className="text-[12px] font-mono opacity-50">#{train.id || train.trainNumber}</span>
+                    <h3 className="text-[18px] font-bold" style={{ color: 'var(--text-heading)' }}>
+                      {train.train_name || train.trainName || train.name || 'Unknown Train'}
+                    </h3>
+                    <span className="text-[12px] font-mono opacity-60" style={{ color: 'var(--text-secondary)' }}>
+                      #{train.train_number || train.trainNumber || train.id || '-----'}
+                    </span>
                   </div>
                   <div className="flex items-center gap-10">
                     <div className="text-center">
-                      <div className="text-[20px] font-black">{train.departure}</div>
-                      <div className="text-[10px] uppercase tracking-widest opacity-50 font-bold">Departs</div>
+                      <div className="text-[20px] font-black" style={{ color: 'var(--text-heading)' }}>
+                        {train.from_std || train.departure_time || train.departure || '--:--'}
+                      </div>
+                      <div className="text-[10px] uppercase tracking-widest font-bold opacity-50" style={{ color: 'var(--text-muted)' }}>Departs</div>
                     </div>
                     <div className="w-12 h-px bg-border relative">
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary" />
                     </div>
                     <div className="text-center">
-                      <div className="text-[20px] font-black">{train.arrival}</div>
-                      <div className="text-[10px] uppercase tracking-widest opacity-50 font-bold">Arrives</div>
+                      <div className="text-[20px] font-black" style={{ color: 'var(--text-heading)' }}>
+                        {train.to_std || train.arrival_time || train.arrival || '--:--'}
+                      </div>
+                      <div className="text-[10px] uppercase tracking-widest font-bold opacity-50" style={{ color: 'var(--text-muted)' }}>Arrives</div>
                     </div>
                   </div>
                   <button onClick={() => navigate('/live-tracking')} className="bp-btn bp-btn--primary px-6 py-2.5 rounded-lg text-[13px] font-bold">

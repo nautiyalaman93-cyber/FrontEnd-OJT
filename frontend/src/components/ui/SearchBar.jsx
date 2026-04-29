@@ -14,11 +14,11 @@ export default function SearchBar({ onSearch, isSearching }) {
     return [0, 1, 2].map(offset => {
       const d = new Date();
       d.setDate(d.getDate() + offset);
-      const day = d.getDate();
-      const month = months[d.getMonth()];
+      const day = String(d.getDate()).padStart(2, '0');
+      const monthNum = String(d.getMonth() + 1).padStart(2, '0');
       const year = d.getFullYear();
-      const machineDate = `${year}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      return { label: `${day} ${month}`, value: machineDate };
+      const machineDate = `${year}${monthNum}${day}`;
+      return { label: `${d.getDate()} ${months[d.getMonth()]}`, value: machineDate };
     });
   };
   const dates = getUpcomingDates();
@@ -63,7 +63,7 @@ export default function SearchBar({ onSearch, isSearching }) {
   };
 
   return (
-    <div className="w-full relative z-40 rounded-2xl p-4" style={{ background: 'var(--bg-surface)' }}>
+    <div className="w-full relative z-40 rounded-2xl p-4 overflow-visible" style={{ background: 'var(--bg-surface)' }}>
 
       <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row items-center gap-0 w-full mb-4">
 

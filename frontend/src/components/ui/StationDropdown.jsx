@@ -28,7 +28,13 @@ export default function StationDropdown({ label, value, onChange, placeholder = 
       const data = await api.searchStations(query || 'a');
       setStations(data);
     };
-    if (isOpen) fetchStations();
+
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        fetchStations();
+      }, 350); // Debounce delay
+      return () => clearTimeout(timer);
+    }
   }, [query, isOpen]);
 
   const filtered = stations;

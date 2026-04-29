@@ -108,7 +108,7 @@ export default function PNRStatus() {
                   className="text-[18px] font-bold"
                   style={{ color: 'var(--text-heading)', fontFamily: "'Poppins', sans-serif" }}
                 >
-                  {statusData.trainNumber} {statusData.trainName}
+                  {statusData.TrainNo || statusData.trainNumber} {statusData.TrainName || statusData.trainName}
                 </h2>
                 <span
                   className="text-[12px] font-bold px-2 py-0.5 rounded"
@@ -122,10 +122,10 @@ export default function PNRStatus() {
                 style={{ color: 'var(--text-secondary)' }}
               >
                 <span className="w-0.5 h-4 rounded-full" style={{ background: 'var(--primary)' }} />
-                {statusData.from} <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} /> {statusData.to}
+                {statusData.From || statusData.from} <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} /> {statusData.To || statusData.to}
               </p>
               <p className="text-[13px] mt-1" style={{ color: 'var(--text-muted)' }}>
-                Dept: {statusData.departureTime} &nbsp;|&nbsp; Arr: {statusData.arrivalTime} &nbsp;|&nbsp; {statusData.distance}
+                Dept: {statusData.DepartureTime || statusData.departureTime || '--:--'} &nbsp;|&nbsp; Arr: {statusData.ArrivalTime || statusData.arrivalTime || '--:--'}
               </p>
             </div>
             <div
@@ -186,20 +186,20 @@ export default function PNRStatus() {
                         </span>
                       </td>
                       <td className="px-5 py-4 text-center" style={{ color: 'var(--text-secondary)' }}>
-                        {p.bookingStatus || '—'}
+                        {p.BookingStatus || p.bookingStatus || '—'}
                       </td>
                       <td className="px-5 py-4 text-center">
                         <span
                           className="font-bold"
-                          style={{ color: p.currentStatus?.startsWith('CNF') ? 'var(--success)' : p.currentStatus?.startsWith('WL') ? '#f97316' : 'var(--text-primary)' }}
+                          style={{ color: (p.CurrentStatus || p.currentStatus)?.startsWith('CNF') ? 'var(--success)' : (p.CurrentStatus || p.currentStatus)?.startsWith('WL') ? '#f97316' : 'var(--text-primary)' }}
                         >
-                          {p.currentStatus || '—'}
+                          {p.CurrentStatus || p.currentStatus || '—'}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-right font-bold" style={{ color: 'var(--text-primary)' }}>
-                        {p.coach && p.seatNumber
-                          ? `${p.coach} | ${p.seatNumber} | ${p.berth || '—'}`
-                          : p.currentStatus?.startsWith('WL') ? 'Waitlisted' : '—'}
+                        {(p.Coach || p.coach) && (p.BerthNo || p.seatNumber)
+                          ? `${p.Coach || p.coach} | ${p.BerthNo || p.seatNumber}`
+                          : (p.CurrentStatus || p.currentStatus)?.startsWith('WL') ? 'Waitlisted' : '—'}
                       </td>
                     </tr>
                   ))}

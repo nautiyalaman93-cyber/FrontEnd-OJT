@@ -20,7 +20,8 @@ const trainMock = require('../mock/trainMock.json');
 // Key format: 'status_{trainNo}_{date}' or 'search_{from}_{to}_{date}'
 // -----------------------------------------------------------------------
 const trainCache = new Map();
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours (Save API quota)
+const STATION_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours for stations
 
 /**
  * Retrieves a value from the cache if it exists and has not expired.
@@ -37,12 +38,13 @@ const getCached = (key) => {
 };
 
 /**
- * Stores a value in the cache with a 5-min expiry.
+ * Stores a value in the cache with a custom or default expiry.
  * @param {string} key
  * @param {*} data
+ * @param {number} ttl
  */
-const setCache = (key, data) => {
-  trainCache.set(key, { data, expiresAt: Date.now() + CACHE_TTL_MS });
+const setCache = (key, data, ttl = CACHE_TTL_MS) => {
+  trainCache.set(key, { data, expiresAt: Date.now() + ttl });
 };
 
 // -----------------------------------------------------------------------
@@ -101,8 +103,13 @@ const searchTrains = async (req, res) => {
   try {
     console.log(`🔄 Cache MISS for ${cacheKey} — calling API`);
     const data = await fetchWithKeyRotation(`/api/v3/trainBetweenStations?fromStationCode=${from}&toStationCode=${to}&dateOfJourney=${date}`);
-    setCache(cacheKey, data.data);
-    return res.json({ success: true, data: data.data });
+    if (data && data.data && data.data.length > 0) {
+      setCache(cacheKey, data.data);
+      return res.json({ success: true, data: data.data });
+    }
+    
+    // If API returns success but 0 results, trigger the same mock fallback
+    throw new Error('No trains found in live API');
   } catch (error) {
     console.error('Train Search API Error:', error.message);
     const mockTrains = [
@@ -112,7 +119,7 @@ const searchTrains = async (req, res) => {
       { trainNumber: '12050', trainName: 'Gatimaan Express', departure: '08:10', arrival: '09:50', duration: '1h 40m', availableClasses: ['CC', 'EC'], runningDays: ['Mon','Tue','Wed','Thu','Sat','Sun'] },
       { trainNumber: '12434', trainName: 'Chennai Rajdhani', departure: '15:35', arrival: '20:45', duration: '29h 10m', availableClasses: ['1A', '2A', '3A'], runningDays: ['Wed','Fri'] },
     ];
-    return res.json({ success: true, data: mockTrains, isMock: true, note: 'Showing sample data — live API temporarily unavailable.' });
+    return res.json({ success: true, data: mockTrains, isMock: true, note: 'Showing sample data — live API returned 0 results or failed.' });
   }
 };
 
@@ -130,6 +137,7 @@ const searchStations = async (req, res) => {
 
   try {
     const data = await fetchWithKeyRotation(`/api/v1/searchStation?query=${query}`);
+    setCache(cacheKey, data.data, STATION_CACHE_TTL_MS); // Use long TTL for stations
     return res.json({ success: true, data: data.data });
   } catch (error) {
     console.error('Station Search API Error:', error.message);
