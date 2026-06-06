@@ -52,6 +52,132 @@ const setCache = (key, data, ttl = CACHE_TTL_MS) => {
 // @desc    Get live running status of a train
 // @access  Public
 // -----------------------------------------------------------------------
+// Helper to transform live API response structure to match what the frontend expects
+const transformLiveStatus = (apiData) => {
+  if (!apiData) return null;
+
+  // 1. Combine previous and upcoming stations (only major stoppages)
+  const prevStops = (apiData.previous_stations || [])
+    .filter(s => s.stoppage_number > 0)
+    .map(s => {
+      const cleanName = s.station_name ? s.station_name.trim().replace(/~$/, '') : '';
+      return {
+        stationCode: s.station_code,
+        station_code: s.station_code,
+        stationName: cleanName,
+        station_name: cleanName,
+        scheduledArrival: s.sta,
+        scheduled_arrival: s.sta,
+        scheduledDeparture: s.std,
+        scheduled_departure: s.std,
+        actualArrival: s.eta,
+        actual_arrival: s.eta,
+        actualDeparture: s.etd,
+        actual_departure: s.etd,
+        delay: s.arrival_delay || 0,
+        status: 'departed'
+      };
+    });
+
+  const upStops = (apiData.upcoming_stations || [])
+    .filter(s => s.stoppage_number > 0)
+    .map(s => {
+      const cleanName = s.station_name ? s.station_name.trim().replace(/~$/, '') : '';
+      return {
+        stationCode: s.station_code,
+        station_code: s.station_code,
+        stationName: cleanName,
+        station_name: cleanName,
+        scheduledArrival: s.sta,
+        scheduled_arrival: s.sta,
+        scheduledDeparture: s.std,
+        scheduled_departure: s.std,
+        actualArrival: s.eta,
+        actual_arrival: s.eta,
+        actualDeparture: s.etd,
+        actual_departure: s.etd,
+        delay: s.arrival_delay || 0,
+        status: 'upcoming'
+      };
+    });
+
+  const mergedStops = [...prevStops, ...upStops];
+
+  // 2. Ensure destination is in the route
+  const destCode = apiData.destination;
+  const hasDest = mergedStops.some(s => s.station_code === destCode);
+  if (!hasDest && destCode) {
+    const cleanDestName = apiData.dest_stn_name ? apiData.dest_stn_name.trim().replace(/~$/, '') : destCode;
+    const destSta = apiData.at_dstn ? (apiData.cur_stn_sta || apiData.eta) : (apiData.cur_stn_sta || '');
+    const destEta = apiData.at_dstn ? (apiData.actual_arrival_time || apiData.eta) : (apiData.eta || '');
+    mergedStops.push({
+      stationCode: destCode,
+      station_code: destCode,
+      stationName: cleanDestName,
+      station_name: cleanDestName,
+      scheduledArrival: destSta,
+      scheduled_arrival: destSta,
+      scheduledDeparture: null,
+      scheduled_departure: null,
+      actualArrival: destEta,
+      actual_arrival: destEta,
+      actualDeparture: null,
+      actual_departure: null,
+      delay: apiData.at_dstn ? (apiData.delay || 0) : 0,
+      status: 'upcoming'
+    });
+  }
+
+  // 3. Mark the current station
+  const curCode = apiData.current_station_code;
+  if (curCode) {
+    let foundCurrent = false;
+    for (let i = mergedStops.length - 1; i >= 0; i--) {
+      const stop = mergedStops[i];
+      if (stop.station_code === curCode) {
+        stop.status = 'current';
+        foundCurrent = true;
+        break;
+      }
+    }
+
+    if (!foundCurrent && apiData.at_dstn) {
+      const lastStop = mergedStops[mergedStops.length - 1];
+      if (lastStop) lastStop.status = 'current';
+    }
+  }
+
+  // 4. Update departed vs upcoming statuses based on the current station position
+  let currentFound = false;
+  for (let i = 0; i < mergedStops.length; i++) {
+    const stop = mergedStops[i];
+    if (stop.status === 'current') {
+      currentFound = true;
+    } else {
+      stop.status = currentFound ? 'upcoming' : 'departed';
+    }
+  }
+
+  const cleanTrainName = apiData.train_name ? apiData.train_name.trim().replace(/~$/, '') : '';
+  const cleanCurStnName = apiData.current_station_name ? apiData.current_station_name.trim().replace(/~$/, '') : '';
+
+  return {
+    trainNumber: apiData.train_number,
+    train_number: apiData.train_number,
+    trainName: cleanTrainName,
+    train_name: cleanTrainName,
+    currentStation: apiData.current_station_code,
+    current_station: apiData.current_station_code,
+    currentStationName: cleanCurStnName,
+    current_station_name: cleanCurStnName,
+    delay: apiData.delay || 0,
+    delayStatus: apiData.new_message || `${apiData.delay || 0} mins late`,
+    lastUpdated: apiData.update_time,
+    speed: apiData.avg_speed || 0,
+    route: mergedStops
+  };
+};
+
 const getTrainStatus = async (req, res) => {
   const { number, date } = req.query;
 
@@ -70,8 +196,9 @@ const getTrainStatus = async (req, res) => {
   try {
     console.log(`🔄 Cache MISS for ${cacheKey} — calling API`);
     const data = await fetchWithKeyRotation(`/api/v1/liveTrainStatus?trainNo=${number}&startDay=1`);
-    setCache(cacheKey, data.data);
-    return res.json({ success: true, data: data.data });
+    const transformed = transformLiveStatus(data.data);
+    setCache(cacheKey, transformed);
+    return res.json({ success: true, data: transformed });
   } catch (error) {
     console.error('Train Status API Error:', error.message);
     // Return specific mock if available, else first mock
